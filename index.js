@@ -2,6 +2,7 @@ const config = require("./tsconfig.json");
 const users = require("./user.json");
 let pokedex_name = require("./pokedex_name.json");
 
+const { Util, MessageEmbed} = require("discord.js");
 const Discord = require('discord.js');
 const Pokedex = require('pokedex-promise-v2');
 const fs = require('fs');
@@ -93,12 +94,12 @@ function get_good_name(name) {
 }
 
 function setChanceGetLegendary() {
-    let nbr = getRandomIntInclusive(1, 650);
+    let nbr = getRandomIntInclusive(1, 649);
     if (config.legendary_array.includes(nbr, 0)) {
         if (getRandomIntInclusive(0, 1)) {
             return nbr;
         } else {
-            nbr = getRandomIntInclusive(1, 650);
+            nbr = getRandomIntInclusive(1, 649);
         }
     }
     return nbr;
@@ -113,9 +114,12 @@ client.on(`message`, msg => {
         let pokemon_id = setChanceGetLegendary();
         P.getPokemonByName(pokemon_id).then(function(response) {
                 name = get_good_name(response.forms[0].name);
+                let color = "BLUE";
+                if (config.legendary_array.includes(pokemon_id, 0))
+                    color = "GOLD";
                 msg.channel.send(`**<@${msg.author.id}> catch ${response.forms[0].name}**`,
                     {embed: {
-                                color: "BLUE",
+                                color: color,
                                 thumbnail: {url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${pokemon_id}.gif`},
                                 description:`Pokedex ID: ${response.id}\n` +
                                             `Type: ${get_types(response.types)}\n` +
@@ -153,7 +157,26 @@ client.on(`message`, msg => {
             all_name += `${pokedex_name.pokedex_name[pokedex[i] - 1]} >> ${pokedex[i]}`
             all_name += '\n';
         }
-        msg.channel.send(`Your pokedex <@${msg.author.id}> :\n${all_name}`, {split: true}).catch(err => console.log(err));
+        const [first, ...rest] = Util.splitMessage(all_name, {maxLength: 512});
+        const embed = new MessageEmbed()
+            .setColor("BLUE")
+            .addField("page 1", first, true);
+        let i = 1;
+        let page = 2
+        ;
+        for (const text of rest) {
+            embed.addField(`page ${page} cmplt:${users.users[where_is_user_in_json(msg.author.id)].user[3].pokedex_completion}/649`, text, true);
+            i++;
+            page++;
+            if (i === 3) {
+                msg.channel.send(embed).catch(err => console.error(err));
+                embed.fields = [];
+                i = 0;
+            }
+        }
+        if (i !== 0) {
+            msg.channel.send(embed).catch(err => console.error(err));
+        }
     }
 });
 
