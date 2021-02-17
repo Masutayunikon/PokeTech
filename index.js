@@ -89,11 +89,10 @@ function catching(msg, args) {
   else {
         let this_user = require(`./users/${msg.author.id}.json`)
         let date = new Date();
+        let cooldown = new Date(this_user.cooldown - Date.now());
         if (this_user.cooldown > date)
-            return msg.reply(`The pokemon was hidden for the moment. ! ${new Date(this_user.cooldown * 1).toTimeString()}`);
-        date = date.setMinutes(date.getMinutes() + 10);
-        this_user.cooldown = date;
-    }
+            return msg.reply(`The pokemon was hidden for the moment. ! **${cooldown.getMinutes()} minutes ${cooldown.getSeconds()} seconds left**`);
+        this_user.cooldown = date.setMinutes(date.getMinutes() + 10);
         let pokemon_id = setChanceGetLegendary();
         P.getPokemonByName(pokemon_id).then(function (response) {
             name = response.forms[0].name;
@@ -207,8 +206,8 @@ function notification(msg, args) {
 
 function register_user(msg, args) {
     if (args.length) {return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);}
-    if (fs.existsSync(`./${msg.author.id}.json`)) {
-        msg.channel.send(`<@${msg.author.id}> you have already an account.`)
+    if (fs.existsSync(`./${msg.author.id}.json`))
+        msg.channel.send(`<@${msg.author.id}> you have already an account.`);
     else {
         create_new_user(msg);
         msg.channel.send(`<@${msg.author.id}> your account was created with success =D!`);
