@@ -1,5 +1,4 @@
 const config = require("./tsconfig.json");
-const users = require("./user.json");
 let pokedex_name = require("./pokedex_name.json");
 const ms = require('ms');
 const { Util, MessageEmbed} = require("discord.js");
@@ -55,24 +54,6 @@ function refresh_user_json(id) {
     return (1);
 }
 
-function where_is_user_in_json(id) {
-    for (let i = 0; i < users.users.length; i++) {
-        if (users.users[i].user[0].discord_id === id) {
-            return (i);
-        }
-    }
-    return (-1);
-}
-
-function user_exist(id) {
-    for (let i = 0; i < users.users.length; i++) {
-        if (users.users[i].user[0].discord_id === id) {
-            return (1);
-        }
-    }
-    return (0);
-}
-
 function getRandomIntInclusive(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -105,7 +86,6 @@ function catching(msg, args) {
     if (args.length) {return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);}
     if (!fs.existsSync(`./${msg.author.id}.json`)) {
         msg.channel.send(`<@${msg.author.id}> you are not registered.`).catch(err => console.error(err));
-        return;
     } else {
         if(cooldown.has(msg.author.id)) {
             return msg.reply('The pokemon was hidden for the moment. !');
@@ -240,7 +220,7 @@ function notification(msg, args) {
 
 function register_user(msg, args) {
     if (args.length) {return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);}
-    if (user_exist(msg.author.id)) {
+    if (fs.existsSync(`./${msg.author.id}.json`)) {
         msg.channel.send(`<@${msg.author.id}> you have already an account.`)
     } else {
         create_new_user(msg);
