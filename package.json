@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "discord.js": "^12.5.1",
+    "discord.js-reaction-menu": "^1.1.1",
     "jsonpath": "^1.1.0",
     "pokeapi-js-wrapper": "^1.2.0",
     "pokedex-promise-v2": "^3.3.0",

@@ -1,6 +1,6 @@
 {
     "prefix": "#",
-    "token": "",
+    "token": "NzM5ODk5NDM4NjQxODQwMTg4.XyhLDA.te24n69E2-AFlXwQ9KVz5fyIyp0",
     "legendary_array": [
         144,
         145,
@@ -47,19 +47,5 @@
         647,
         648,
         649
-    ],
-    "good_name": [
-        "basculin",
-        "basculin-bluestriped",
-        "mimejr",
-        "shellos",
-        "darmanitan"
-    ],
-    "wrong_name": [
-        "basculin-red-striped",
-        "basculin-blue-striped",
-        "mime-jr",
-        "shellos-west",
-        "darmanitan-standard"
     ]
 }

@@ -1,15 +1,12 @@
 const config = require("./tsconfig.json");
-const users = require("./user.json");
 let pokedex_name = require("./pokedex_name.json");
-const ms = require('ms');
-const { Util, MessageEmbed} = require("discord.js");
+const {Util, MessageEmbed} = require("discord.js");
 const Discord = require('discord.js');
 const Pokedex = require('pokedex-promise-v2');
 const fs = require('fs');
 const P = new Pokedex();
 const rm = require('discord.js-reaction-menu')
 const client = new Discord.Client();
-let cooldown = new Set();
 
 const cmd = new Map;
 
@@ -27,16 +24,16 @@ function get_nbr_of_pokemon_catch(pokedex) {
 
 function create_new_user(msg) {
     let user_id = msg.author.id;
-    let new_user_json = {user: [
-            {"discord_id": user_id},
-            {"user_number": (users.users.length + 1)},
-            {"pokedex": []},
-            {"pokedex_completion": 0},
-            {"username": msg.author.username},
-            {"notification": true}
-        ]}
+    let new_user_json = {
+        "discord_id": user_id,
+        "pokedex": [],
+        "pokedex_completion": 0,
+        "username": msg.author.username,
+        "notification": false,
+        "cooldown": 0
+    }
 
-    fs.writeFile(`./${msg.author.id}.json`, JSON.stringify(new_user_json, null, 2), (err) => {
+    fs.writeFile(`./users/${msg.author.id}.json`, JSON.stringify(new_user_json, null, 2), (err) => {
         if (err) {
             console.log("Error to save json file");
         } else {
@@ -46,31 +43,12 @@ function create_new_user(msg) {
 }
 
 function refresh_user_json(id) {
-    let this_user = require(`./${id}.json`);
-    fs.writeFile(`./${id}.json`, JSON.stringify(this_user, null, 2), (err) => {
-        if (err) {
+    let this_user = require(`./users/${id}.json`);
+    fs.writeFile(`./users/${id}.json`, JSON.stringify(this_user, null, 2), (err) => {
+        if (err)
             return (-1)
-        }
     });
     return (1);
-}
-
-function where_is_user_in_json(id) {
-    for (let i = 0; i < users.users.length; i++) {
-        if (users.users[i].user[0].discord_id === id) {
-            return (i);
-        }
-    }
-    return (-1);
-}
-
-function user_exist(id) {
-    for (let i = 0; i < users.users.length; i++) {
-        if (users.users[i].user[0].discord_id === id) {
-            return (1);
-        }
-    }
-    return (0);
 }
 
 function getRandomIntInclusive(min, max) {
@@ -89,6 +67,7 @@ function get_types(types) {
     }
     return type;
 }
+
 function setChanceGetLegendary() {
     let nbr = getRandomIntInclusive(1, 649);
     if (config.legendary_array.includes(nbr, 0)) {
@@ -102,17 +81,18 @@ function setChanceGetLegendary() {
 }
 
 function catching(msg, args) {
-    if (args.length) {return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);}
-    if (!fs.existsSync(`./${msg.author.id}.json`)) {
+    if (args.length) {
+        return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);
+    }
+    if (!fs.existsSync(`./users/${msg.author.id}.json`))
         msg.channel.send(`<@${msg.author.id}> you are not registered.`).catch(err => console.error(err));
-        return;
-    } else {
-        if(cooldown.has(msg.author.id)) {
-            return msg.reply('The pokemon was hidden for the moment. !');
-        } else {
-            cooldown.add(msg.author.id)
-            setTimeout(() => {cooldown.delete(msg.author.id); msg.author.send("It's time to catch my friend =D")}, 600000);
-        }
+    else {
+        let this_user = require(`./users/${msg.author.id}.json`)
+        let date = new Date();
+        if (this_user.cooldown > date)
+            return msg.reply(`The pokemon was hidden for the moment. ! ${new Date(this_user.cooldown * 1).toTimeString()}`);
+        date = date.setMinutes(date.getMinutes() + 10);
+        this_user.cooldown = date;
         let pokemon_id = setChanceGetLegendary();
         P.getPokemonByName(pokemon_id).then(function (response) {
             name = response.forms[0].name;
@@ -133,14 +113,12 @@ function catching(msg, args) {
         }).catch(function (error) {
             console.log('There was an ERROR: ', error);
         });
-        let this_user = require(`./${msg.author.id}.json`)
-        let pokedex = this_user.user[2].pokedex;
+        let pokedex = this_user.pokedex;
         pokedex.push(pokemon_id);
-        this_user.user[3].pokedex_completion = get_nbr_of_pokemon_catch(pokedex);
+        this_user.pokedex_completion = get_nbr_of_pokemon_catch(pokedex);
         pokedex.sort(function (a, b) {
             return a - b
         });
-
         if (refresh_user_json(msg.author.id) === -1) {
             console.log(`An error for save pokemon ${pokemon_id} for player ${msg.author.id} in json files.`);
         } else {
@@ -149,21 +127,10 @@ function catching(msg, args) {
     }
 }
 
-function edit(msg) {
-    msg.edit("coucou");
-}
-
-function test(message, args) {
-    if (message.mentions.members.size === 1) {
-        message.channel.send("test reussie");
-    } else
-        message.channel.send("upsi");
-}
-
 function exchange(message, args) {
     if (message.mentions.members.size === 1) {
-        console.log(fs.existsSync(`./${message.mentions.users.first().id}.json`));
-        if (fs.existsSync(`./${message.mentions.users.first().id}.json`) && fs.existsSync(`./${message.author.id}.json`)) {
+        console.log(fs.existsSync(`./users/${message.mentions.users.first().id}.json`));
+        if (fs.existsSync(`./users/${message.mentions.users.first().id}.json`) && fs.existsSync(`./users/${message.author.id}.json`)) {
             message.channel.send("test reussie");
         } else {
             message.channel.send("upsi");
@@ -174,14 +141,16 @@ function exchange(message, args) {
 }
 
 function see_pokedex(msg, args) {
-    if (args.length) {return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);}
-    if (!fs.existsSync(`./${msg.author.id}.json`)) {
-        msg.channel.send(`<@${msg.author.id}> you are not registered.`).catch(err => console.error(err));
+    let user = args.length > 0 ? msg.mentions.users.first().id : msg.author.id;
+    if (!fs.existsSync(`./users/${user}.json`)) {
+       if (args)
+           msg.channel.send(`<@${user}> is not registered.`).catch(err => console.error(err));
+       else
+           msg.channel.send(`<@${user}> you are not registered.`).catch(err => console.error(err));
     } else {
-        let this_user = require(`./${msg.author.id}.json`);
-        let pokedex = this_user.user[2].pokedex;
+        let this_user = require(`./users/${user}.json`);
+        let pokedex = this_user.pokedex;
         let all_name = "";
-        let i = 1;
         let page = 2;
         let arr = [];
         for (let i = 0; i < pokedex.length; i++) {
@@ -197,29 +166,26 @@ function see_pokedex(msg, args) {
         arr.push(new MessageEmbed({
             title: `page ${1}`,
             description: `${first}`
-        }).setFooter(`completion: ${this_user.user[3].pokedex_completion}/649`));
+        }).setFooter(`completion: ${this_user.pokedex_completion}/649`));
 
         for (const text of rest) {
             arr.push(new MessageEmbed({
                 title: `page ${page}`,
                 description: `${text}`
-            }).setFooter(`completion: ${this_user.user[3].pokedex_completion}/649`));
+            }).setFooter(`completion: ${this_user.pokedex_completion}/649`));
             page++;
         }
-        let pokedex_embed = new rm.menu({
-            channel: msg.channel,
-            userID: msg.author.id,
-            pages: arr
-        })
     }
 }
 
 function notification(msg, args) {
-    if (args.length) {return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);}
-    if (!fs.existsSync(`./${msg.author.id}.json`)) {
+    if (args.length) {
+        return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);
+    }
+    if (!fs.existsSync(`./users/${msg.author.id}.json`)) {
         msg.channel.send(`<@${msg.author.id}> you are not registered.`).catch(err => console.error(err));
     } else {
-        let this_user = require(`./${msg.author.id}.json`);
+        let this_user = require(`./users/${msg.author.id}.json`);
         if (this_user.user[5].notification === false) {
             this_user.user[5].notification = true;
             msg.author.send("Hello PokeUsers =D!").catch(err => console.error(err));
@@ -239,17 +205,19 @@ function notification(msg, args) {
 }
 
 function register_user(msg, args) {
-    if (args.length) {return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);}
-    if (user_exist(msg.author.id)) {
+    if (args.length) return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);
+    if (fs.existsSync(`./users/${msg.author.id}.json`))
         msg.channel.send(`<@${msg.author.id}> you have already an account.`)
-    } else {
+    else {
         create_new_user(msg);
         msg.channel.send(`<@${msg.author.id}> your account was created with success =D!`);
     }
 }
 
 function help(msg, args) {
-    if (args.length) {return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);}
+    if (args.length) {
+        return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);
+    }
     msg.channel.send(`<@${msg.author.id}>\n` + "```" + "Here are my orders:\n" +
         "^help to get help\n" +
         "^register to register\n" +
@@ -258,15 +226,23 @@ function help(msg, args) {
         "^notif to enable or disable private message notification" + "```");
 }
 
+function setup_requirement() {
+    if (!fs.existsSync("./users/"))
+        fs.mkdir("./users/", err => {
+            if (err)
+                console.error("Can't create users directory");
+        })
+}
+
 client.on('ready', () => {
-    console.log( `Logged in as ${client.user.username}!`);
+    console.log(`Logged in as ${client.user.username}!`);
     cmd.set("catch", catching);
     cmd.set("pokedex", see_pokedex);
     cmd.set("register", register_user);
-    cmd.set("test", test);
     cmd.set("notif", notification);
     cmd.set("help", help);
     cmd.set("exchange", exchange);
+    setup_requirement();
 });
 
 client.on('message', message => {
@@ -276,9 +252,8 @@ client.on('message', message => {
     const command = args.shift().toLowerCase();
 
     if (cmd.get(command) === undefined) {
-        if (message.content !== "^^") {
+        if (message.content !== "^^")
             message.channel.send(`<@${message.author.id}>, I don't understand what you tell me!`).catch(err => console.error(err));
-        }
     } else
         cmd.get(command)(message, args);
 });
