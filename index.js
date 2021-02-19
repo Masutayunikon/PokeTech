@@ -110,7 +110,7 @@ function catching(msg, args) {
         let pokedex = this_user.pokedex;
         pokedex.push(pokemon_id);
         this_user.pokedex_completion = get_nbr_of_pokemon_catch(pokedex);
-        pokedex.sort((a, b) => {return a - b});
+        pokedex.sort((a, b) => {return a - b;});
         if (refresh_user_json(msg.author.id) === -1)
             console.log(`An error for save pokemon ${pokemon_id} for player ${msg.author.id} in json files.`);
         else
@@ -192,7 +192,7 @@ function notification(msg, args) {
     }
 }
 
-function users(msg, args)
+function leaderboard(msg, args)
 {
     if (args.length)
         return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);
@@ -201,16 +201,22 @@ function users(msg, args)
         let dir = fs.readdirSync("./users/", "UTF-8");
         dir.forEach(value => {
            let user = require(`./users/${value}`);
+           let legendary = 0;
+           for (let i = 0; i < user.pokedex.length; i++)
+                if (config.legendary_array.includes(user.pokedex[i], 0))
+                    legendary++;
            let json = {
                id: user.discord_id,
                pc_size: user.pokedex.length,
-               username: user.username
+               username: user.username,
+               legendary: legendary
            }
            users.push(json);
         })
+        users.sort((a, b) => {return b.pc_size - a.pc_size;})
         let str_user = ""
         for (let i = 0; i < users.length; i++)
-            str_user += `**${users[i].username}** (${users[i].id}) - Pokemon: ${users[i].pc_size}\n`;
+            str_user += `**${users[i].username}** - Pokemon: ${users[i].pc_size} - Legendary: **${users[i].legendary}**\n`;
         msg.channel.send(new MessageEmbed({
             color: "BLUE",
             title: "User (id) - Pokemon number",
@@ -243,7 +249,7 @@ function help(msg, args) {
         config.prefix + "catch to catch a pokemon (every 10 minutes)\n" +
         config.prefix + "pokedex to see his pokedex with these pokemon catch inside\n" +
         config.prefix + "notif to enable or disable private message notification\n" +
-        config.prefix + "users to display all users" +
+        config.prefix + "leaderboard to display classements" +
         "```");
 }
 
@@ -263,7 +269,7 @@ client.on('ready', () => {
     cmd.set("notif", notification);
     cmd.set("help", help);
     cmd.set("exchange", exchange);
-    cmd.set("users", users);
+    cmd.set("leaderboard", leaderboard);
     setup_requirement();
 });
 
