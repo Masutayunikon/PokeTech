@@ -192,6 +192,35 @@ function notification(msg, args) {
     }
 }
 
+function users(msg, args)
+{
+    if (args.length)
+        return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);
+    try {
+        let users = [];
+        let dir = fs.readdirSync("./users/", "UTF-8");
+        dir.forEach(value => {
+           let user = require(`./users/${value}`);
+           let json = {
+               id: user.discord_id,
+               pc_size: user.pokedex.length,
+               username: user.username
+           }
+           users.push(json);
+        })
+        let str_user = ""
+        for (let i = 0; i < users.length; i++)
+            str_user += `**${users[i].username}** (${users[i].id}) - Pokemon: ${users[i].pc_size}\n`;
+        msg.channel.send(new MessageEmbed({
+            color: "BLUE",
+            title: "User (id) - Pokemon number",
+            description: str_user
+        })).catch(err => console.log(err));
+    } catch (err) {
+        msg.channel.send("No user are registered");
+    }
+}
+
 function register_user(msg, args) {
     if (args.length)
         return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);
@@ -206,12 +235,16 @@ function register_user(msg, args) {
 function help(msg, args) {
     if (args.length)
         return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);
-    msg.channel.send(`<@${msg.author.id}>\n` + "```" + "Here are my orders:\n" +
-        "^help to get help\n" +
-        "^register to register\n" +
-        "^catch to catch a pokemon (every 10 minutes)\n" +
-        "^pokedex to see his pokedex with these pokemon catch inside\n" +
-        "^notif to enable or disable private message notification" + "```");
+    msg.channel.send(`<@${msg.author.id}>\n` +
+        "```" +
+        "Here are my orders:\n" +
+        config.prefix + "help to get help\n" +
+        config.prefix + "register to register\n" +
+        config.prefix + "catch to catch a pokemon (every 10 minutes)\n" +
+        config.prefix + "pokedex to see his pokedex with these pokemon catch inside\n" +
+        config.prefix + "notif to enable or disable private message notification\n" +
+        config.prefix + "users to display all users" +
+        "```");
 }
 
 function setup_requirement() {
@@ -230,6 +263,7 @@ client.on('ready', () => {
     cmd.set("notif", notification);
     cmd.set("help", help);
     cmd.set("exchange", exchange);
+    cmd.set("users", users);
     setup_requirement();
 });
 
