@@ -130,7 +130,9 @@ function exchange(message, args) {
 }
 
 function see_pokedex(msg, args) {
-    let user = args.length > 0 ? msg.mentions.users.first().id : msg.author.id;
+    let user = msg.author.id;
+    if (args.length)
+        user = msg.mentions.users.size === 0 ? args[0] : msg.mentions.users.first().id;
     if (!fs.existsSync(`./users/${user}.json`)) {
        if (args)
            msg.channel.send(`<@${user}> is not registered.`).catch(err => console.error(err));
