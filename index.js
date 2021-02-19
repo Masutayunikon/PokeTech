@@ -1,6 +1,6 @@
 const config = require("./tsconfig.json");
 const pokedex_name = require("./pokedex_name.json");
-const { Util, MessageEmbed} = require("discord.js");
+const {Util, MessageEmbed} = require("discord.js");
 const Discord = require('discord.js');
 const Pokedex = require('pokedex-promise-v2');
 const fs = require('fs');
@@ -24,29 +24,27 @@ function get_nbr_of_pokemon_catch(pokedex) {
 function create_new_user(msg) {
     let user_id = msg.author.id;
     let new_user_json = {
-            "discord_id": user_id,
-            "user_number": 0,
-            "pokedex": [],
-            "pokedex_completion": 0,
-            "username": msg.author.username,
-            "notification": true
+        "discord_id": user_id,
+        "user_number": 0,
+        "pokedex": [],
+        "pokedex_completion": 0,
+        "username": msg.author.username,
+        "notification": true
     }
 
     fs.writeFile(`./users/${msg.author.id}.json`, JSON.stringify(new_user_json, null, 2), (err) => {
-        if (err) {
+        if (err)
             console.log("Error to save json file");
-        } else {
+        else
             console.log("Save new users json files.");
-        }
     });
 }
 
 function refresh_user_json(id) {
     let this_user = require(`./users/${id}.json`);
     fs.writeFile(`./users/${id}.json`, JSON.stringify(this_user, null, 2), (err) => {
-        if (err) {
+        if (err)
             return (-1)
-        }
     });
     return (1);
 }
@@ -61,9 +59,8 @@ function get_types(types) {
     let type = ""
     for (let i = 0; i < types.length; i++) {
         type += types[i].type.name;
-        if ((i + 1) !== types.length) {
+        if ((i + 1) !== types.length)
             type += ", ";
-        }
     }
     return type;
 }
@@ -71,19 +68,17 @@ function get_types(types) {
 function setChanceGetLegendary() {
     let nbr = getRandomIntInclusive(1, 649);
     if (config.legendary_array.includes(nbr, 0)) {
-        if (getRandomIntInclusive(0, 1)) {
+        if (getRandomIntInclusive(0, 1))
             return nbr;
-        } else {
+        else
             nbr = getRandomIntInclusive(1, 649);
-        }
     }
     return nbr;
 }
 
 function catching(msg, args) {
-    if (args.length) {
+    if (args.length)
         return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);
-    }
     if (!fs.existsSync(`./users/${msg.author.id}.json`))
         msg.channel.send(`<@${msg.author.id}> you are not registered.`).catch(err => console.error(err));
     else {
@@ -113,20 +108,17 @@ function catching(msg, args) {
                             `Weight: ${(parseFloat(response.weight) * 2.205).toFixed(2)} lbs\n`
                     }
                 }).catch(err => console.error(err));
-        }).catch(function (error) {
-            console.log('There was an ERROR: ', error);
-        });
+        }).catch(error => console.log('There was an ERROR: ', error));
         let pokedex = this_user.pokedex;
         pokedex.push(pokemon_id);
         this_user.pokedex_completion = get_nbr_of_pokemon_catch(pokedex);
-        pokedex.sort(function (a, b) {
-            return a - b
+        pokedex.sort((a, b) => {
+            return a - b;
         });
-        if (refresh_user_json(msg.author.id) === -1) {
+        if (refresh_user_json(msg.author.id) === -1)
             console.log(`An error for save pokemon ${pokemon_id} for player ${msg.author.id} in json files.`);
-        } else {
+        else
             console.log(`Saving a new pokemon ${pokemon_id} for player ${msg.author.id} in json files with success.`);
-        }
     }
 }
 
@@ -137,55 +129,15 @@ function test(message, args) {
 function exchange(message, args) {
     if (message.mentions.members.size === 1) {
         console.log(fs.existsSync(`./${message.mentions.users.first().id}.json`));
-        if (fs.existsSync(`./${message.mentions.users.first().id}.json`) && fs.existsSync(`./${message.author.id}.json`) && message.mentions.users.first().id !== message.author.id) {
+        if (fs.existsSync(`./${message.mentions.users.first().id}.json`) && fs.existsSync(`./${message.author.id}.json`) && message.mentions.users.first().id !== message.author.id)
             message.channel.send("test reussie");
-        } else {
+        else
             message.channel.send("upsi");
-        }
-    } else {
+    } else
         message.channel.send("upsi")
-    }
 }
 
-function see_pc(msg, args) {
-    let user = args.length > 0 ? msg.mentions.users.first().id : msg.author.id;
-    if (!fs.existsSync(`./users/${user}.json`)) {
-        msg.channel.send(`<@${user}> are not registered.`).catch(err => console.error(err));
-    } else {
-        let this_user = require(`./users/${user}.json`);
-        let pokedex = this_user.pokedex;
-        let all_name = "";
-        let page = 2;
-        let arr = [];
-        for (let i = 0; i < pokedex.length; i++) {
-            if (config.legendary_array.includes(pokedex[i], 0))
-                all_name += `ID: ${pokedex[i]} **${pokedex_name.pokedex_name[pokedex[i] - 1]}**\n`
-            else
-                all_name += `ID: ${pokedex[i]} ${pokedex_name.pokedex_name[pokedex[i] - 1]}\n`;
-        }
-        const [first, ...rest] = Util.splitMessage(all_name, {maxLength: 192});
-        arr.push(new MessageEmbed({
-            title: `page ${1}`,
-            description: `${first}`
-        }).setFooter(`completion: ${this_user.pokedex_completion}/649`));
-
-        for (const text of rest) {
-            arr.push(new MessageEmbed({
-                title: `page ${page}`,
-                description: `${text}`
-            }).setFooter(`completion: ${this_user.pokedex_completion}/649`));
-            page++;
-        }
-        new rm.menu({
-            channel: msg.channel,
-            userID: msg.author.id,
-            pages: arr
-        })
-    }
-}
-
-function leaderboard(msg, args)
-{
+function leaderboard(msg, args) {
     if (args.length)
         return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);
     try {
@@ -205,7 +157,9 @@ function leaderboard(msg, args)
             }
             users.push(json);
         })
-        users.sort((a, b) => {return b.pc_size - a.pc_size;})
+        users.sort((a, b) => {
+            return b.pc_size - a.pc_size;
+        })
         let str_user = ""
         for (let i = 0; i < users.length; i++)
             str_user += `**${users[i].username}** - Pokemon: ${users[i].pc_size} - Legendary: **${users[i].legendary}**\n`;
@@ -219,11 +173,32 @@ function leaderboard(msg, args)
     }
 }
 
+function send_menu(arr, this_user, first, page, msg, rest)
+{
+    arr.push(new MessageEmbed({
+        title: `page ${1}`,
+        description: `${first}`
+    }).setFooter(`completion: ${this_user.pokedex_completion}/649`));
+
+    for (const text of rest) {
+        arr.push(new MessageEmbed({
+            title: `page ${page}`,
+            description: `${text}`
+        }).setFooter(`completion: ${this_user.pokedex_completion}/649`));
+        page++;
+    }
+    new rm.menu({
+        channel: msg.channel,
+        userID: msg.author.id,
+        pages: arr
+    })
+}
+
 function see_pokedex(msg, args) {
     let user = args.length > 0 ? msg.mentions.users.first().id : msg.author.id;
-    if (!fs.existsSync(`./users/${user}.json`)) {
+    if (!fs.existsSync(`./users/${user}.json`))
         msg.channel.send(`<@${user}> are not registered.`).catch(err => console.error(err));
-    } else {
+    else {
         let this_user = require(`./users/${user}.json`);
         let pokedex = this_user.pokedex;
         let all_name = "";
@@ -241,35 +216,40 @@ function see_pokedex(msg, args) {
             all_name += '\n';
         }
         const [first, ...rest] = Util.splitMessage(all_name, {maxLength: 256});
-        arr.push(new MessageEmbed({
-            title: `page ${1}`,
-            description: `${first}`
-        }).setFooter(`completion: ${this_user.pokedex_completion}/649`));
+        send_menu(arr, this_user, first, page, msg, rest);
+    }
+}
 
-        for (const text of rest) {
-            arr.push(new MessageEmbed({
-                title: `page ${page}`,
-                description: `${text}`
-            }).setFooter(`completion: ${this_user.pokedex_completion}/649`));
-            page++;
+
+function see_pc(msg, args) {
+    let user = args.length > 0 ? msg.mentions.users.first().id : msg.author.id;
+    if (!fs.existsSync(`./users/${user}.json`))
+        msg.channel.send(`<@${user}> are not registered.`).catch(err => console.error(err));
+    else {
+        let this_user = require(`./users/${user}.json`);
+        let pokedex = this_user.pokedex;
+        let all_name = "";
+        let page = 2;
+        let arr = [];
+        for (let i = 0; i < pokedex.length; i++) {
+            if (config.legendary_array.includes(pokedex[i], 0))
+                all_name += `ID: ${pokedex[i]} **${pokedex_name.pokedex_name[pokedex[i] - 1]}**\n`
+            else
+                all_name += `ID: ${pokedex[i]} ${pokedex_name.pokedex_name[pokedex[i] - 1]}\n`;
         }
-        new rm.menu({
-            channel: msg.channel,
-            userID: msg.author.id,
-            pages: arr
-        })
+        const [first, ...rest] = Util.splitMessage(all_name, {maxLength: 192});
+        send_menu(arr, this_user, first, page, msg, rest);
     }
 }
 
 function notification(msg, args) {
-    if (args.length) {return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);}
-    if (!fs.existsSync(`./users/${msg.author.id}.json`)) {
+    if (args.length)
+        return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);
+    if (!fs.existsSync(`./users/${msg.author.id}.json`))
         msg.channel.send(`<@${msg.author.id}> you are not registered.`).catch(err => console.error(err));
-    } else {
+    else {
         let this_user = require(`./users/${msg.author.id}.json`);
         if (!this_user.notification) {
-            let a;
-            let message_to_send = `I send you a private message =D`;
             this_user.notification = true;
             msg.author.send("Hello PokeUsers =D!").catch(a => {
                 if (a.code === 50007) {
@@ -279,45 +259,49 @@ function notification(msg, args) {
             });
             if (this_user.notification)
                 msg.reply("I send you private message =D");
-        } else if (this_user.notification){
+        } else if (this_user.notification) {
             this_user.notification = false;
             msg.channel.send(`<@${msg.author.id}>, I disabled private message with you, goodbye my friend...`);
         }
 
-        if (refresh_user_json(msg.author.id) === -1) {
+        if (refresh_user_json(msg.author.id) === -1)
             console.log(`An error for save pokemon ${msg.author.id} json files!`);
-        } else {
+        else
             console.log(`Saving ${msg.author.id} json files with success.`);
-        }
     }
 }
 
 function register_user(msg, args) {
-    if (args.length) {return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);}
-    if (fs.existsSync(`./users/${msg.author.id}.json`)) {
+    if (args.length)
+        return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);
+    if (fs.existsSync(`./users/${msg.author.id}.json`))
         msg.channel.send(`<@${msg.author.id}> you have already an account.`)
-    } else {
+    else {
         create_new_user(msg);
         msg.channel.send(`<@${msg.author.id}> your account was created with success =D!`);
     }
 }
 
 function help(msg, args) {
-    if (args.length) {return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);}
-    msg.channel.send(`<@${msg.author.id}>\n` + "```" + "Here are my commands:\n" +
-        "^help to get help\n" +
-        "^register to register\n" +
-        "^catch to catch a pokemon (every 10 minutes)\n" +
-        "^pokedex (optional: @player) to see player pokedex with these pokemon catch inside\n" +
-        "^pc (optional : @player) to see player pc (pokemon captured box)\n" +
-        "^notif to enable or disable private message notification\n" +
-        "^leaderboard to see the best catcher in the world\n" +
-        "^patch to see my last patch notes" +
+    if (args.length)
+        return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);
+    msg.channel.send(`<@${msg.author.id}>\n` +
+        "```" +
+        "Here are my commands:\n" +
+        config.prefix + "help to get help\n" +
+        config.prefix + "register to register\n" +
+        config.prefix + "catch to catch a pokemon (every 10 minutes)\n" +
+        config.prefix + "pokedex (optional: @player) to see player pokedex with these pokemon catch inside\n" +
+        config.prefix + "pc (optional : @player) to see player pc (pokemon captured box)\n" +
+        config.prefix + "notif to enable or disable private message notification\n" +
+        config.prefix + "leaderboard to see the best catcher in the world\n" +
+        config.prefix + "patch to see my last patch notes" +
         "```");
 }
 
 function patch_notes(msg, args) {
-    if (args.length) {return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);}
+    if (args.length)
+        return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);
     msg.channel.send(`<@${msg.author.id}>\n` + "```" + "Here are my patch notes\n" +
         "17/02/2021 bot launched\n" +
         "18/02/2021 Legendary pokemon is now write in bold in pokedex\n" +
@@ -329,7 +313,7 @@ function patch_notes(msg, args) {
 }
 
 client.on('ready', () => {
-    console.log( `Logged in as ${client.user.username}!`);
+    console.log(`Logged in as ${client.user.username}!`);
     cmd.set("catch", catching);
     cmd.set("pokedex", see_pokedex);
     cmd.set("register", register_user);
@@ -349,9 +333,8 @@ client.on('message', message => {
     const command = args.shift().toLowerCase();
 
     if (cmd.get(command) === undefined) {
-        if (message.content !== "^^") {
+        if (message.content !== "^^")
             message.channel.send(`<@${message.author.id}>, I don't understand what you tell me!`).catch(err => console.error(err));
-        }
     } else
         cmd.get(command)(message, args);
 });
