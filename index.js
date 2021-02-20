@@ -173,18 +173,19 @@ function leaderboard(msg, args) {
     }
 }
 
-function send_menu(arr, this_user, first, page, msg, rest)
+function send_menu(arr, this_user, first, page, msg, rest, is_pc)
 {
+    let footer = is_pc ? `Pokemon: ${this_user.pokedex.length}` : `completion: ${this_user.pokedex_completion}/649`;
     arr.push(new MessageEmbed({
         title: `page ${1}`,
         description: `${first}`
-    }).setFooter(`completion: ${this_user.pokedex_completion}/649`));
+    }).setFooter(footer));
 
     for (const text of rest) {
         arr.push(new MessageEmbed({
             title: `page ${page}`,
             description: `${text}`
-        }).setFooter(`completion: ${this_user.pokedex_completion}/649`));
+        }).setFooter(footer));
         page++;
     }
     new rm.menu({
@@ -216,7 +217,7 @@ function see_pokedex(msg, args) {
             all_name += '\n';
         }
         const [first, ...rest] = Util.splitMessage(all_name, {maxLength: 256});
-        send_menu(arr, this_user, first, page, msg, rest);
+        send_menu(arr, this_user, first, page, msg, rest, false);
     }
 }
 
@@ -238,7 +239,7 @@ function see_pc(msg, args) {
                 all_name += `ID: ${pokedex[i]} ${pokedex_name.pokedex_name[pokedex[i] - 1]}\n`;
         }
         const [first, ...rest] = Util.splitMessage(all_name, {maxLength: 192});
-        send_menu(arr, this_user, first, page, msg, rest);
+        send_menu(arr, this_user, first, page, msg, rest, true);
     }
 }
 
