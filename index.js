@@ -153,7 +153,8 @@ function leaderboard(msg, args) {
                 id: user.discord_id,
                 pc_size: user.pokedex.length,
                 username: user.username,
-                legendary: legendary
+                legendary: legendary,
+                pokedex: user.pokedex_completion
             }
             users.push(json);
         })
@@ -162,7 +163,7 @@ function leaderboard(msg, args) {
         })
         let str_user = ""
         for (let i = 0; i < users.length; i++)
-            str_user += `**${users[i].username}** - Pokemon: ${users[i].pc_size} - Legendary: **${users[i].legendary}**\n`;
+            str_user += `**${users[i].username}** - Pokédex: ${users[i].pokedex} ` + "`" + users[i].pc_size + "`" + `- Legendary: **${users[i].legendary}**\n`;
         msg.channel.send(new MessageEmbed({
             color: "BLUE",
             title: "Catcher - Pokedex Completion",
