@@ -326,6 +326,8 @@ client.on('ready', () => {
     cmd.set("patch", patch_notes);
     cmd.set("pc", see_pc);
     cmd.set("leaderboard", leaderboard);
+    cmd.set("c", catching);
+    cmd.set("ld", leaderboard);
 });
 
 client.on('message', message => {
