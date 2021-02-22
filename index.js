@@ -65,9 +65,17 @@ function get_types(types) {
     return type;
 }
 
-async function getRarity(id)
-{
-    P.getPokemonSpeciesByName
+async function getRarity(id) {
+    P.getPokemonSpeciesByName(id).then(response => {
+        if (response.is_mythical)
+            return "mythical";
+        else if (response.is_legendary)
+            return "legendary";
+        else if (response.is_baby)
+            return "baby";
+        else
+            return "normal";
+    })
 }
 
 function setChanceGetLegendary() {
@@ -81,7 +89,7 @@ function setChanceGetLegendary() {
     return nbr;
 }
 
-function catching(msg, args) {
+async function catching(msg, args) {
     if (args.length)
         return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);
     if (!fs.existsSync(`./users/${msg.author.id}.json`))
@@ -97,27 +105,35 @@ function catching(msg, args) {
             setTimeout(() => msg.author.send("You can catch a new pokemon =D"), 3600000);
         let pokemon_id = setChanceGetLegendary();
         let pokemon_image_url = {url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${pokemon_id}.gif`}
-        P.getPokemonSpeciesByName(pokemon_id).then(response => {
+        /*P.getPokemonSpeciesByName(pokemon_id).then(response => {
             name = response.name;
             let color = "BLUE";
             if (response.is_legendary === true)
                 color = "GOLD";
             else if (response.is_mythical === true)
-                color = "PURPLE"
-            P.getPokemonByName(pokemon_id).then(resp => {
-                msg.channel.send(`**<@${msg.author.id}> catch ${response.name}**`,
-                    {
-                        embed: {
-                            color: color,
-                            thumbnail: pokemon_image_url,
-                            description: `Pokedex ID: ${response.id}\n` +
-                                `Type: ${get_types(resp.types)}\n` +
-                                `Height: ${((parseFloat(resp.height) / 10) * 3.281).toFixed(2)} feet\n` +
-                                `Weight: ${(parseFloat(resp.weight) * 2.205).toFixed(2)} lbs\n`
-                        }
-                    }).catch(err => console.error(err));
-            }).catch(error => console.log('There was an ERROR: ', error));
-        })
+                color = "PURPLE"*/
+        let rarity = await getRarity(pokemon_id);
+        let color = "BLUE";
+        if (rarity === "legendary")
+            color = "GOLD"
+        else if (rarity === "mythical")
+            color = "PURPLE";
+        else if (rarity === "baby")
+            color = "WHITE";
+        P.getPokemonByName(pokemon_id).then(resp => {
+            msg.channel.send(`**<@${msg.author.id}> catch ${response.name}**`,
+                {
+                    embed: {
+                        color: color,
+                        thumbnail: pokemon_image_url,
+                        description: `Pokedex ID: ${response.id}\n` +
+                            `Type: ${get_types(resp.types)}\n` +
+                            `Height: ${((parseFloat(resp.height) / 10) * 3.281).toFixed(2)} feet\n` +
+                            `Weight: ${(parseFloat(resp.weight) * 2.205).toFixed(2)} lbs\n`
+                    }
+                }).catch(err => console.error(err));
+        }).catch(error => console.log('There was an ERROR: ', error));
+        //})
         let pokedex = this_user.pokedex;
         pokedex.push(pokemon_id);
         this_user.pokedex_completion = get_nbr_of_pokemon_catch(pokedex);
@@ -183,8 +199,7 @@ async function leaderboard(msg, args) {
     }
 }
 
-function send_menu(arr, this_user, first, page, msg, rest, is_pc)
-{
+function send_menu(arr, this_user, first, page, msg, rest, is_pc) {
     let footer = is_pc ? `Pokemon: ${this_user.pokedex.length}` : `completion: ${this_user.pokedex_completion}/649`;
     arr.push(new MessageEmbed({
         title: `page ${1}`,
