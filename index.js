@@ -66,7 +66,7 @@ function get_types(types) {
 }
 
 async function getRarity(id) {
-    P.getPokemonSpeciesByName(id).then(response => {
+    return P.getPokemonSpeciesByName(id).then(response => {
         if (response.is_mythical)
             return "mythical";
         else if (response.is_legendary)
@@ -103,15 +103,8 @@ async function catching(msg, args) {
         this_user.cooldown = date.setMinutes(date.getMinutes() + 6);
         if (this_user.notification)
             setTimeout(() => msg.author.send("You can catch a new pokemon =D"), 3600000);
-        let pokemon_id = setChanceGetLegendary();
+        let pokemon_id = 172;
         let pokemon_image_url = {url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${pokemon_id}.gif`}
-        /*P.getPokemonSpeciesByName(pokemon_id).then(response => {
-            name = response.name;
-            let color = "BLUE";
-            if (response.is_legendary === true)
-                color = "GOLD";
-            else if (response.is_mythical === true)
-                color = "PURPLE"*/
         let rarity = await getRarity(pokemon_id);
         let color = "BLUE";
         if (rarity === "legendary")
@@ -119,7 +112,7 @@ async function catching(msg, args) {
         else if (rarity === "mythical")
             color = "PURPLE";
         else if (rarity === "baby")
-            color = "WHITE";
+            color = "GREEN";
         P.getPokemonByName(pokemon_id).then(resp => {
             msg.channel.send(`**<@${msg.author.id}> catch ${response.name}**`,
                 {
@@ -133,7 +126,6 @@ async function catching(msg, args) {
                     }
                 }).catch(err => console.error(err));
         }).catch(error => console.log('There was an ERROR: ', error));
-        //})
         let pokedex = this_user.pokedex;
         pokedex.push(pokemon_id);
         this_user.pokedex_completion = get_nbr_of_pokemon_catch(pokedex);
