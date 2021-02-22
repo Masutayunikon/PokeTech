@@ -65,6 +65,11 @@ function get_types(types) {
     return type;
 }
 
+async function getRarity(id)
+{
+    P.getPokemonSpeciesByName
+}
+
 function setChanceGetLegendary() {
     let nbr = getRandomIntInclusive(1, 649);
     if (config.legendary_array.includes(nbr, 0)) {
@@ -87,28 +92,32 @@ function catching(msg, args) {
         let cooldown = new Date(this_user.cooldown - Date.now());
         if (this_user.cooldown > date)
             return msg.reply(`The pokemon was hidden for the moment. ! **${cooldown.getMinutes()} minutes ${cooldown.getSeconds()} seconds left**`);
-        this_user.cooldown = date.setMinutes(date.getMinutes() + 10);
+        this_user.cooldown = date.setMinutes(date.getMinutes() + 6);
         if (this_user.notification)
-            setTimeout(() => msg.author.send("You can catch a new pokemon =D"), 600000);
+            setTimeout(() => msg.author.send("You can catch a new pokemon =D"), 3600000);
         let pokemon_id = setChanceGetLegendary();
         let pokemon_image_url = {url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${pokemon_id}.gif`}
-        P.getPokemonByName(pokemon_id).then(response => {
-            name = response.forms[0].name;
+        P.getPokemonSpeciesByName(pokemon_id).then(response => {
+            name = response.name;
             let color = "BLUE";
-            if (config.legendary_array.includes(pokemon_id, 0))
+            if (response.is_legendary === true)
                 color = "GOLD";
-            msg.channel.send(`**<@${msg.author.id}> catch ${response.forms[0].name}**`,
-                {
-                    embed: {
-                        color: color,
-                        thumbnail: pokemon_image_url,
-                        description: `Pokedex ID: ${response.id}\n` +
-                            `Type: ${get_types(response.types)}\n` +
-                            `Height: ${((parseFloat(response.height) / 10) * 3.281).toFixed(2)} feet\n` +
-                            `Weight: ${(parseFloat(response.weight) * 2.205).toFixed(2)} lbs\n`
-                    }
-                }).catch(err => console.error(err));
-        }).catch(error => console.log('There was an ERROR: ', error));
+            else if (response.is_mythical === true)
+                color = "PURPLE"
+            P.getPokemonByName(pokemon_id).then(resp => {
+                msg.channel.send(`**<@${msg.author.id}> catch ${response.name}**`,
+                    {
+                        embed: {
+                            color: color,
+                            thumbnail: pokemon_image_url,
+                            description: `Pokedex ID: ${response.id}\n` +
+                                `Type: ${get_types(resp.types)}\n` +
+                                `Height: ${((parseFloat(resp.height) / 10) * 3.281).toFixed(2)} feet\n` +
+                                `Weight: ${(parseFloat(resp.weight) * 2.205).toFixed(2)} lbs\n`
+                        }
+                    }).catch(err => console.error(err));
+            }).catch(error => console.log('There was an ERROR: ', error));
+        })
         let pokedex = this_user.pokedex;
         pokedex.push(pokemon_id);
         this_user.pokedex_completion = get_nbr_of_pokemon_catch(pokedex);
@@ -137,7 +146,7 @@ function exchange(message, args) {
         message.channel.send("upsi")
 }
 
-function leaderboard(msg, args) {
+async function leaderboard(msg, args) {
     if (args.length)
         return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);
     try {
@@ -314,7 +323,7 @@ function patch_notes(msg, args) {
         "```");
 }
 
-client.on('ready', () => {
+client.on('ready', async () => {
     console.log(`Logged in as ${client.user.username}!`);
     cmd.set("catch", catching);
     cmd.set("pokedex", see_pokedex);
@@ -328,6 +337,7 @@ client.on('ready', () => {
     cmd.set("leaderboard", leaderboard);
     cmd.set("c", catching);
     cmd.set("ld", leaderboard);
+
 });
 
 client.on('message', message => {
