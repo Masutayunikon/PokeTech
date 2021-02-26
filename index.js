@@ -102,8 +102,8 @@ async function catching(msg, args) {
             return msg.reply(`The pokemon was hidden for the moment. ! **${cooldown.getMinutes()} minutes ${cooldown.getSeconds()} seconds left**`);
         this_user.cooldown = date.setMinutes(date.getMinutes() + 6);
         if (this_user.notification)
-            setTimeout(() => msg.author.send("You can catch a new pokemon =D"), 3600000);
-        let pokemon_id = 172;
+            setTimeout(() => msg.author.send("You can catch a new pokemon =D"), 360000);
+        let pokemon_id = setChanceGetLegendary();
         let pokemon_image_url = {url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${pokemon_id}.gif`}
         let rarity = await getRarity(pokemon_id);
         let color = "BLUE";
@@ -114,12 +114,12 @@ async function catching(msg, args) {
         else if (rarity === "baby")
             color = "GREEN";
         P.getPokemonByName(pokemon_id).then(resp => {
-            msg.channel.send(`**<@${msg.author.id}> catch ${response.name}**`,
+            msg.channel.send(`**<@${msg.author.id}> catch ${resp.forms[0].name}**`,
                 {
                     embed: {
                         color: color,
                         thumbnail: pokemon_image_url,
-                        description: `Pokedex ID: ${response.id}\n` +
+                        description: `Pokedex ID: ${pokemon_id}\n` +
                             `Type: ${get_types(resp.types)}\n` +
                             `Height: ${((parseFloat(resp.height) / 10) * 3.281).toFixed(2)} feet\n` +
                             `Weight: ${(parseFloat(resp.weight) * 2.205).toFixed(2)} lbs\n`
@@ -303,18 +303,22 @@ function register_user(msg, args) {
 function help(msg, args) {
     if (args.length)
         return msg.channel.send(`<@${msg.author.id}> I don't have any arguments.`);
-    msg.channel.send(`<@${msg.author.id}>\n` +
-        "```" +
-        "Here are my commands:\n" +
-        config.prefix + "help to get help\n" +
-        config.prefix + "register to register\n" +
-        config.prefix + "catch to catch a pokemon (every 10 minutes)\n" +
-        config.prefix + "pokedex (optional: @player) to see player pokedex with these pokemon catch inside\n" +
-        config.prefix + "pc (optional : @player) to see player pc (pokemon captured box)\n" +
-        config.prefix + "notif to enable or disable private message notification\n" +
-        config.prefix + "leaderboard to see the best catcher in the world\n" +
-        config.prefix + "patch to see my last patch notes" +
-        "```");
+    let cmds = [];
+    cmd.forEach((value, key) => {
+        if (!value.alias) {
+            cmds.push({
+                name: key,
+                value: `${value.desc}\n➳ The syntax is : \`${value.syntax}\``
+            })
+        }
+    });
+    msg.channel.send(new MessageEmbed({
+            color: "BLUE",
+            title: "Here are my commands:",
+            timestamp: new Date(),
+            fields: cmds
+        }
+    ).setFooter("Poketech.io - Commands").setThumbnail(client.user.avatarURL({dynamic: true}))).catch(err => console.log(err));
 }
 
 function patch_notes(msg, args) {
@@ -330,21 +334,99 @@ function patch_notes(msg, args) {
         "```");
 }
 
+async function setup_requirement() {
+    if (!fs.existsSync("./users/"))
+        fs.mkdir("./users/", err => {
+            if (err)
+                console.error("Can't create users directory");
+        })
+    if (!fs.existsSync("./api/"))
+        fs.mkdir("./api/", err => {
+            if (err)
+                console.error("Can't create api/species directory");
+        })
+    if (!fs.existsSync("./api/species/"))
+        fs.mkdir("./api/species/", err => {
+            if (err)
+                console.error("Can't create api/species directory");
+        })
+    fs.readdir("./api/species/", async (err, files) => {
+        if (files.length !== 649) {
+            for (let i = 1; i <= 649; i++)
+                await P.getPokemonSpeciesByName(i).then(resp => {
+                    fs.writeFile(`./api/species/${i}.json`, JSON.stringify(resp, null, 4), (err) => {
+                        if (err)
+                            console.log("Error to save %d species json file", i);
+                        else
+                            console.log("Save new species json files.");
+                    });
+                })
+        }
+    });
+
+}
+
+
 client.on('ready', async () => {
     console.log(`Logged in as ${client.user.username}!`);
-    cmd.set("catch", catching);
-    cmd.set("pokedex", see_pokedex);
-    cmd.set("register", register_user);
-    cmd.set("test", test);
-    cmd.set("notif", notification);
-    cmd.set("help", help);
-    cmd.set("exchange", exchange);
-    cmd.set("patch", patch_notes);
-    cmd.set("pc", see_pc);
-    cmd.set("leaderboard", leaderboard);
-    cmd.set("c", catching);
-    cmd.set("ld", leaderboard);
-
+    cmd.set("catch", {
+        alias: false,
+        function: catching,
+        desc: "Catch pokemon (every 10 minutes)",
+        syntax: `${config.prefix}catch`
+    });
+    cmd.set("pokedex", {
+        alias: false,
+        function: see_pokedex,
+        desc: "Display the pokedex",
+        syntax: `${config.prefix}pokedex (optional: @player)`
+    });
+    cmd.set("register", {
+        alias: false,
+        function: register_user,
+        desc: "Register new user",
+        syntax: `${config.prefix}register`
+    });
+    cmd.set("notif", {
+        alias: false,
+        function: notification,
+        desc: "Enable or disable notification when you can catch",
+        syntax: `${config.prefix}notif`
+    });
+    cmd.set("help", {
+        alias: false,
+        function: help,
+        desc: "Display list of commands",
+        syntax: `${config.prefix}help`
+    });
+    cmd.set("exchange", {
+        alias: false,
+        function: help,
+        desc: "Exchange pokemon with other player | On going",
+        syntax: `${config.prefix}exchange @player`
+    });
+    cmd.set("patch", {
+        alias: false,
+        function: patch_notes,
+        desc: "Display list of patch notes",
+        syntax: `${config.prefix}patch`
+    });
+    cmd.set("pc", {
+        alias: false,
+        function: see_pc,
+        desc: "Display list of pokemon catched",
+        syntax: `${config.prefix}pc (optional: @player)`
+    });
+    cmd.set("leaderboard", {
+        alias: false,
+        function: leaderboard,
+        desc: "See who has the higher number of catched pokemon",
+        syntax: `${config.prefix}leaderboard`
+    });
+    cmd.set("c", {alias: true, function: catching});
+    cmd.set("ld", {alias: true, function: leaderboard});
+    cmd.set("h", {alias: true, function: help});
+    await setup_requirement();
 });
 
 client.on('message', message => {
@@ -357,7 +439,7 @@ client.on('message', message => {
         if (message.content !== "^^")
             message.channel.send(`<@${message.author.id}>, I don't understand what you tell me!`).catch(err => console.error(err));
     } else
-        cmd.get(command)(message, args);
+        cmd.get(command).function(message, args);
 });
 
 client.login(config.token).catch(err => console.error(err));
