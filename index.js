@@ -255,7 +255,7 @@ function see_pc(msg, args) {
             else
                 all_name += `ID: ${pokedex[i]} ${pokedex_name.pokedex_name[pokedex[i] - 1]}\n`;
         }
-        const [first, ...rest] = Util.splitMessage(all_name, {maxLength: 192});
+        const [first, ...rest] = Util.splitMessage(all_name, {maxLength: 384});
         send_menu(arr, this_user, first, page, msg, rest, true);
     }
 }
@@ -365,7 +365,6 @@ async function setup_requirement() {
     });
 
 }
-
 
 client.on('ready', async () => {
     console.log(`Logged in as ${client.user.username}!`);
