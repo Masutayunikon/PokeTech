@@ -67,7 +67,7 @@ module.exports = {
         if (!fs.existsSync(`./users/${msg.author.id}.json`))
             msg.channel.send(`<@${msg.author.id}> you are not registered.`).catch(err => console.error(err));
         else {
-            let this_user = require(`./users/${msg.author.id}.json`)
+            let this_user = require(`../users/${msg.author.id}.json`)
             let date = new Date();
             let cooldown = new Date(this_user.cooldown - Date.now());
             if (this_user.cooldown > date)
