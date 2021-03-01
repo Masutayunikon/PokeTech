@@ -1,10 +1,15 @@
 {
-    "prefix": "#",
-    "token": "NzM5ODk5NDM4NjQxODQwMTg4.XyhLDA.hjzA8duxBv6eBNYVpRHNw-1d1JU",
+    "prefix": "^",
+    "token": "",
+    "channels": [
+        "810537906992447508",
+        "810943826374033428"
+    ],
     "legendary_array": [
         144,
         145,
         146,
+        150,
         151,
         243,
         244,
