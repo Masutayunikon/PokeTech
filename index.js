@@ -207,7 +207,7 @@ function send_menu(arr, this_user, first, msg, rest, is_pc, page_arg) {
         page++;
     }
     console.log(page_arg);
-    if (page_arg > page)
+    if (page_arg > page || page_arg <= 0)
         msg.channel.send("Cannot get the page !").catch(err => console.log(err));
     else {
         new rm.menu({
@@ -226,8 +226,8 @@ function see_pokedex(msg, args) {
         if (msg.mentions.users.size) {
             user = msg.mentions.users.first().id;
             page_arg = args[1];
-        }
-        page_arg = args[0];
+        } else
+            page_arg = args[0];
     }
     if (!fs.existsSync(`./users/${user}.json`))
         msg.channel.send(`<@${user}> are not registered.`).catch(err => console.error(err));
@@ -260,8 +260,8 @@ function see_pc(msg, args) {
         if (msg.mentions.users.size) {
             user = msg.mentions.users.first().id;
             page_arg = args[1];
-        }
-        page_arg = args[0];
+        } else
+            page_arg = args[0];
     }
     if (!fs.existsSync(`./users/${user}.json`))
         msg.channel.send(`<@${user}> are not registered.`).catch(err => console.error(err));
@@ -399,7 +399,7 @@ client.on('ready', async () => {
         alias: false,
         function: see_pokedex,
         desc: "Display the pokedex",
-        syntax: `${config.prefix}pokedex (optional: @player)`
+        syntax: `${config.prefix}pokedex (optional: @player | page)`
     });
     cmd.set("register", {
         alias: false,
@@ -435,7 +435,7 @@ client.on('ready', async () => {
         alias: false,
         function: see_pc,
         desc: "Display list of pokemon catched",
-        syntax: `${config.prefix}pc (optional: @player)`
+        syntax: `${config.prefix}pc (optional: @player | page)`
     });
     cmd.set("leaderboard", {
         alias: false,
