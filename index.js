@@ -206,7 +206,7 @@ function send_menu(arr, this_user, first, msg, rest, is_pc, page_arg) {
         }).setFooter(footer));
         page++;
     }
-    console.log(page_arg);
+
     if (page_arg > page || page_arg <= 0)
         msg.channel.send("Cannot get the page !").catch(err => console.log(err));
     else {
@@ -450,7 +450,7 @@ client.on('ready', async () => {
 });
 
 client.on('message', message => {
-    if (!message.content.startsWith(config.prefix) || message.author.bot) return;
+    if ((!message.content.startsWith(config.prefix) || message.author.bot) && !config.channels.includes(message.channel.id, 0)) return;
 
     const args = message.content.slice(config.prefix.length).trim().split(/ +/);
     const command = args.shift().toLowerCase();
