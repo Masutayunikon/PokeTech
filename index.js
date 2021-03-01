@@ -191,8 +191,9 @@ async function leaderboard(msg, args) {
     }
 }
 
-function send_menu(arr, this_user, first, page, msg, rest, is_pc) {
+function send_menu(arr, this_user, first, msg, rest, is_pc, page_arg) {
     let footer = is_pc ? `Pokemon: ${this_user.pokedex.length}` : `completion: ${this_user.pokedex_completion}/649`;
+    let page = 2;
     arr.push(new MessageEmbed({
         title: `page ${1}`,
         description: `${first}`
@@ -205,22 +206,35 @@ function send_menu(arr, this_user, first, page, msg, rest, is_pc) {
         }).setFooter(footer));
         page++;
     }
-    new rm.menu({
-        channel: msg.channel,
-        userID: msg.author.id,
-        pages: arr
-    })
+    console.log(page_arg);
+    if (page_arg > page)
+        msg.channel.send("Cannot get the page !").catch(err => console.log(err));
+    else {
+        new rm.menu({
+            channel: msg.channel,
+            userID: msg.author.id,
+            pages: arr,
+            page: page_arg - 1
+        });
+    }
 }
 
 function see_pokedex(msg, args) {
-    let user = args.length > 0 ? msg.mentions.users.first().id : msg.author.id;
+    let user = msg.author.id;
+    let page_arg = 1;
+    if (args.length > 0) {
+        if (msg.mentions.users.size) {
+            user = msg.mentions.users.first().id;
+            page_arg = args[1];
+        }
+        page_arg = args[0];
+    }
     if (!fs.existsSync(`./users/${user}.json`))
         msg.channel.send(`<@${user}> are not registered.`).catch(err => console.error(err));
     else {
         let this_user = require(`./users/${user}.json`);
         let pokedex = this_user.pokedex;
         let all_name = "";
-        let page = 2;
         let arr = [];
         for (let i = 1; i < 650; i++) {
             let pokedex_name_str = "???????"
@@ -234,20 +248,27 @@ function see_pokedex(msg, args) {
             all_name += '\n';
         }
         const [first, ...rest] = Util.splitMessage(all_name, {maxLength: 256});
-        send_menu(arr, this_user, first, page, msg, rest, false);
+        send_menu(arr, this_user, first, msg, rest, false, page_arg);
     }
 }
 
 
 function see_pc(msg, args) {
-    let user = args.length > 0 ? msg.mentions.users.first().id : msg.author.id;
+    let user = msg.author.id;
+    let page_arg = 1;
+    if (args.length > 0) {
+        if (msg.mentions.users.size) {
+            user = msg.mentions.users.first().id;
+            page_arg = args[1];
+        }
+        page_arg = args[0];
+    }
     if (!fs.existsSync(`./users/${user}.json`))
         msg.channel.send(`<@${user}> are not registered.`).catch(err => console.error(err));
     else {
         let this_user = require(`./users/${user}.json`);
         let pokedex = this_user.pokedex;
         let all_name = "";
-        let page = 2;
         let arr = [];
         for (let i = 0; i < pokedex.length; i++) {
             if (config.legendary_array.includes(pokedex[i], 0))
@@ -256,7 +277,7 @@ function see_pc(msg, args) {
                 all_name += `ID: ${pokedex[i]} ${pokedex_name.pokedex_name[pokedex[i] - 1]}\n`;
         }
         const [first, ...rest] = Util.splitMessage(all_name, {maxLength: 384});
-        send_menu(arr, this_user, first, page, msg, rest, true);
+        send_menu(arr, this_user, first, msg, rest, true, page_arg);
     }
 }
 
