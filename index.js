@@ -450,7 +450,7 @@ client.on('ready', async () => {
 });
 
 client.on('message', message => {
-    if ((!message.content.startsWith(config.prefix) || message.author.bot) && !config.channels.includes(message.channel.id, 0)) return;
+    if (!message.content.startsWith(config.prefix) || message.author.bot || !config.channels.includes(message.channel.id)) return;
 
     const args = message.content.slice(config.prefix.length).trim().split(/ +/);
     const command = args.shift().toLowerCase();
