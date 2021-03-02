@@ -13,7 +13,7 @@ module.exports = {
             let users = [];
             let dir = fs.readdirSync("./users/", "UTF-8");
             dir.forEach(value => {
-                let user = require(`..  /users/${value}`);
+                let user = require(`../users/${value}`);
                 let legendary = 0;
                 for (let i = 0; i < user.pokedex.length; i++)
                     if (config.legendary_array.includes(user.pokedex[i], 0))

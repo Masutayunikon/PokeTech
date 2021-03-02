@@ -16,9 +16,9 @@ module.exports = {
         if (args.length > 0) {
             if (msg.mentions.users.size) {
                 user = msg.mentions.users.first().id;
-                page_arg = args.type === "number" ? args[1] : 1;
+                page_arg = isNaN(args[1]) ? 1 : args[1];
             } else
-                page_arg = args[0].type === "number" ? args[0] : 1;
+                page_arg = isNaN(args[0]) ? 1 : args[0];
         }
         if (!fs.existsSync(`./users/${user}.json`))
             msg.channel.send(`<@${user}> are not registered.`).catch(err => console.error(err));
