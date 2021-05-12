@@ -27,7 +27,7 @@ module.exports = {
                 }
                 users.push(json);
             })
-            users.sort((a, b) => { return b.pc_size - a.pc_size; })
+            users.sort((a, b) => { return b.pokedex - a.pokedex; })
             let str_user = ""
             for (let i = 0; i < users.length; i++)
                 str_user += `**${users[i].username}** - Pokédex: ${users[i].pokedex} ` + "`" + users[i].pc_size + "`" + `- Legendary: **${users[i].legendary}**\n`;
