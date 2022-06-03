@@ -23,6 +23,7 @@
     "discord-api-types": "^0.33.2",
     "discord.js": "^13.7.0",
     "dotenv": "^16.0.1",
-    "pokedex-promise-v2": "^3.3.2"
+    "pokedex-promise-v2": "^3.3.2",
+    "request": "^2.88.2"
   }
 }
