@@ -35,7 +35,7 @@ function getSprite(pokemon) {
                 return reject(error);
             if (response.statusCode === 404)
                 return resolve(pokemon.sprites.front_default);
-            return reject(response.statusCode);
+            return resolve(`https://projectpokemon.org/images/normal-sprite/${pokemon.name}.gif`);
         })
     })
 }
