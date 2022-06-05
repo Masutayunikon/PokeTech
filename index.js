@@ -15,6 +15,13 @@ for (const file of commandFiles) {
     client.commands.set(command.data.name, command);
 }
 
+// if users directory doesn't exist, create it
+if (!fs.existsSync('./users/'))
+    fs.mkdir('./users/', err => {
+        if (err)
+            console.error("Can't create users directory");
+    });
+
 client.once('ready', () => {
     console.log('Ready!');
 });
@@ -35,3 +42,5 @@ client.on('interactionCreate', async interaction => {
 });
 
 client.login(token);
+
+global.client = client;
