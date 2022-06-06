@@ -4,6 +4,9 @@ const Pokedex = require('pokedex-promise-v2')
 const P = new Pokedex();
 const request = require('request');
 const fs = require('fs');
+const config = require('../config.json');
+
+global.idArray = [];
 
 async function getIdArray() {
     let result = [];
@@ -20,7 +23,6 @@ async function getIdArray() {
         }).catch(error => {
             console.error(error);
         })
-    console.log(result.length);
     return result;
 }
 
@@ -29,8 +31,23 @@ function getRandomFromArray(array) {
 }
 
 // check if url https://projectpokemon.org/images/normal-sprite/${pokemon.name}.gif return 404 if yes return pokemon.sprites.front_default url string
-function getSprite(pokemon) {
+function getSprite(pokemon, shiny) {
+    if (shiny) {
+        return new Promise((resolve, reject) => {
+            if (pokemon.sprites.versions["generation-v"]["black-white"].animated.front_shiny)
+                return resolve(pokemon.sprites.versions["generation-v"]["black-white"].animated.front_shiny);
+            request(`https://projectpokemon.org/images/shiny-sprite/${pokemon.name}.gif`, (error, response, body) => {
+                if (error)
+                    return reject(error);
+                if (response.statusCode === 404)
+                    return resolve(pokemon.sprites.front_shiny);
+                return resolve(`https://projectpokemon.org/images/shiny-sprite/${pokemon.name}.gif`);
+            })
+        })
+    }
     return new Promise((resolve, reject) => {
+        if (pokemon.sprites.versions["generation-v"]["black-white"].animated.front_default)
+            return resolve(pokemon.sprites.versions["generation-v"]["black-white"].animated.front_default);
         request(`https://projectpokemon.org/images/normal-sprite/${pokemon.name}.gif`, (error, response, body) => {
             if (error)
                 return reject(error);
@@ -68,7 +85,7 @@ function readJsonFile(userId) {
 function createJsonFile(userId) {
     return new Promise((resolve, reject) => {
         const json = {
-            pokedex: [],
+            pokedex: {shiny: [], legendary: [], special: [], mythic: [], baby: [], normal: []},
             timer: Date.now(),
             level: 1,
             xp: 0
@@ -85,7 +102,6 @@ function createJsonFile(userId) {
 function getTimer(userId) {
     return new Promise((resolve, reject) => {
         readJsonFile(userId).then(json => {
-            console.log(Date.now(), json.timer, Date.now() - json.timer, json.timer - Date.now());
             return resolve(json.timer - Date.now());
         }).catch(error => {
             reject(error);
@@ -123,7 +139,7 @@ function fileExist(userId) {
 // function for save json in user directory file named by user id
 function saveJsonFile(userId, json) {
     return new Promise((resolve, reject) => {
-        fs.writeFile(`./users/${userId}.json`, JSON.stringify(json), (err) => {
+        fs.writeFile(`./users/${userId}.json`, JSON.stringify(json, null, 4), (err) => {
             if (err)
                 return reject(err);
             return resolve();
@@ -132,10 +148,21 @@ function saveJsonFile(userId, json) {
 }
 
 // function for read json file in user directory named with user id and add pokemon id to pokedex array
-function addPokemonToPokedex(userId, pokemonId) {
+function addPokemonToPokedex(userId, pokemonId, isShiny) {
     return new Promise((resolve, reject) => {
-        readJsonFile(userId).then(json => {
-            json.pokedex.push(pokemonId);
+        readJsonFile(userId).then(async json => {
+            if (isShiny) {
+                json.pokedex.shiny.push(pokemonId);
+            } else if (await getRarity(pokemonId) === "GOLD") {
+                json.pokedex.legendary.push(pokemonId);
+            } else if (await getRarity(pokemonId) === "RED") {
+                json.pokedex.special.push(pokemonId);
+            } else if (await getRarity(pokemonId) === "GREEN") {
+                json.pokedex.baby.push(pokemonId);
+            } else if (await getRarity(pokemonId) === "DARK_PURPLE") {
+                json.pokedex.mythic.push(pokemonId);
+            } else
+                json.pokedex.normal.push(pokemonId);
             saveJsonFile(userId, json).then(() => {
                 resolve();
             }).catch(error => {
@@ -156,12 +183,17 @@ function getDate(date) {
     });
 }
 
+// function to calcul xp needed for level up in minecraft
+function getXpNeeded(level) {
+
+}
+
 async function getRarity(id) {
     return P.getPokemonSpeciesByName(id).then(response => {
         if (response.is_mythical)
-            return "VIOLET";
+            return "DARK_PURPLE";
         else if (response.is_legendary)
-            return "YELLOW";
+            return "GOLD";
         else if (response.is_baby)
             return "GREEN";
         return "BLUE";
@@ -170,25 +202,63 @@ async function getRarity(id) {
     });
 }
 
+async function getPokemonId() {
+    let id = getRandomFromArray(idArray);
+    if (await getRarity(id) === "RED")
+        if (getRandomIntInclusive(1, 100) <= 20)
+            return id;
+        else
+            return getPokemonId();
+    if (await getRarity(id) === "GREEN")
+        if (getRandomIntInclusive(1, 100) <= 80)
+            return id;
+        else
+            return getPokemonId();
+    if (await getRarity(id) === "GOLD")
+        if (getRandomIntInclusive(1, 100) <= 30)
+            return id;
+        else
+            return getPokemonId();
+    if (await getRarity(id) === "DARK_PURPLE")
+        if (getRandomIntInclusive(1, 100) <= 50)
+            return id;
+        else
+            return getPokemonId();
+    return id;
+}
+
+function isShiny() {
+    return getRandomIntInclusive(1, 100) === 5;
+}
+
 async function catchPokemon(interaction) {
+
+    if (idArray.length === 0)
+        idArray = await getIdArray();
     if (await getTimer(interaction.user.id) < 0) {
-        //await setTimer(interaction.user.id);
-        let id = getRandomFromArray(await getIdArray());
+        await setTimer(interaction.user.id);
+        let id = await getPokemonId();
+        let shiny = isShiny();
         P.getPokemonByName(id).then(async (pokemon) => {
-            addPokemonToPokedex(interaction.user.id, id).then(() => {
-                getSprite(pokemon).then(async (sprite) => {
+            addPokemonToPokedex(interaction.user.id, id, shiny).then(() => {
+                getSprite(pokemon, shiny).then(async (sprite) => {
                     getRarity(id).then(async (rarity) => {
+                        let title = (shiny) ? `${pokemon.name} ${findEmoji("shiny", config.guildId)}` : `${pokemon.name}`;
                         const embed = new MessageEmbed()
-                            .setTitle(`${pokemon.name}`)
-                            // set description with pokemon information
+                            .setTitle(title)
                             .setDescription(`**Type:** ${pokemon.types.map(type => type.type.name).join(', ')}\n**Weight:** ${pokemon.weight}kg\n**Height:** ${pokemon.height}m`)
                             .setColor(rarity)
                             .setImage(sprite)
                         await interaction.editReply({embeds: [embed]});
+                    }).catch(error => {
+                        console.log(error);
                     });
-                }).catch(error => {
-                    console.error(error);
-                    interaction.editReply(pokemon.sprites.front_default);
+                }).catch(async error => {
+                    const embed = new MessageEmbed()
+                        .setTitle(`Sorry, an error occured`)
+                        .setColor("DARK_RED")
+                        .setDescription(`${error}`)
+                    await interaction.editReply({embeds: [embed]});
                 });
             });
         }).catch(error => {
@@ -198,7 +268,7 @@ async function catchPokemon(interaction) {
         getTimer(interaction.user.id).then(async (time) => {
             const embed = new MessageEmbed()
                 .setTitle(`You have to wait ${getDate(time)}`)
-                .setColor("BLUE")
+                .setColor("WHITE")
             await interaction.editReply({embeds: [embed]});
         });
     }
@@ -215,7 +285,7 @@ module.exports = {
      */
     async execute(interaction) {
         await interaction.deferReply();
-        fileExist(interaction.user.id).then(async (result) => {
+                fileExist(interaction.user.id).then(async (result) => {
             if (!result)
                 createJsonFile(interaction.user.id).then(async () => {
                    await catchPokemon(interaction);
