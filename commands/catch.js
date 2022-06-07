@@ -1,12 +1,12 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { CommandInteraction, MessageEmbed, ColorResolvable, EmojiResolvable } = require('discord.js');
 const Pokedex = require('pokedex-promise-v2')
-const P = new Pokedex();
 const request = require('request');
 const fs = require('fs');
 const config = require('../config.json');
 
 global.idArray = [];
+global.P = new Pokedex();
 
 async function getIdArray() {
     let result = [];
@@ -51,8 +51,11 @@ function getSprite(pokemon, shiny) {
         request(`https://projectpokemon.org/images/normal-sprite/${pokemon.name}.gif`, (error, response, body) => {
             if (error)
                 return reject(error);
-            if (response.statusCode === 404)
-                return resolve(pokemon.sprites.front_default);
+            if (response.statusCode === 404) {
+                if (pokemon.sprites.front_default)
+                    return resolve(pokemon.sprites.front_default);
+                return resolve(pokemon.sprites.versions["generation-viii"]["icons"].front_default);
+            }
             return resolve(`https://projectpokemon.org/images/normal-sprite/${pokemon.name}.gif`);
         })
     })
@@ -85,7 +88,7 @@ function readJsonFile(userId) {
 function createJsonFile(userId) {
     return new Promise((resolve, reject) => {
         const json = {
-            pokedex: {shiny: [], legendary: [], special: [], mythic: [], baby: [], normal: []},
+            pokedex: {},
             timer: Date.now(),
             level: 1,
             xp: 0
@@ -151,23 +154,19 @@ function saveJsonFile(userId, json) {
 function addPokemonToPokedex(userId, pokemonId, isShiny) {
     return new Promise((resolve, reject) => {
         readJsonFile(userId).then(async json => {
-            if (isShiny) {
-                json.pokedex.shiny.push(pokemonId);
-            } else if (await getRarity(pokemonId) === "GOLD") {
-                json.pokedex.legendary.push(pokemonId);
-            } else if (await getRarity(pokemonId) === "RED") {
-                json.pokedex.special.push(pokemonId);
-            } else if (await getRarity(pokemonId) === "GREEN") {
-                json.pokedex.baby.push(pokemonId);
-            } else if (await getRarity(pokemonId) === "DARK_PURPLE") {
-                json.pokedex.mythic.push(pokemonId);
-            } else
-                json.pokedex.normal.push(pokemonId);
-            saveJsonFile(userId, json).then(() => {
-                resolve();
+            P.getPokemonByName(pokemonId).then(async pokemon => {
+                let is_shiny = isShiny
+                if (!json.pokedex.pokemonId)
+                    json.pokedex[pokemonId] = [];
+                json.pokedex[pokemonId].push({name: pokemon.name, rarity: await getRarity(pokemonId), is_shiny: is_shiny});
+                saveJsonFile(userId, json).then(() => {
+                    resolve();
+                }).catch(error => {
+                    reject(error);
+                })
             }).catch(error => {
                 reject(error);
-            })
+            });
         }).catch(error => {
             reject(error);
         })

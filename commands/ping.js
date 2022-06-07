@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { CommandInteraction } = require('discord.js');
+const { MessageActionRow, MessageSelectMenu, CommandInteraction, MessageButton } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -11,6 +11,14 @@ module.exports = {
      * @returns {Promise<void>}
      */
     async execute(interaction) {
-        await interaction.reply('Pong!');
+        const row = new MessageActionRow()
+            .addComponents(
+                new MessageButton()
+                    .setCustomId('primary')
+                    .setLabel('Primary')
+                    .setStyle('PRIMARY'),
+            );
+
+        await interaction.reply({ content: 'Pong!', components: [row] });
     },
 };
