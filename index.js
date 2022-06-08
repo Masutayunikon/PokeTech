@@ -2,6 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Intents } = require('discord.js');
 const { token } = require('./config.json');
+const Pokedex = require('pokedex-promise-v2');
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
 
@@ -15,7 +16,6 @@ for (const file of commandFiles) {
     client.commands.set(command.data.name, command);
 }
 
-// if users directory doesn't exist, create it
 if (!fs.existsSync('./users/'))
     fs.mkdir('./users/', err => {
         if (err)
@@ -41,6 +41,11 @@ client.on('interactionCreate', async interaction => {
     }
 });
 
-client.login(token);
+client.login(token).then(err => {
+    if (err)
+        console.error(err);
+});
 
 global.client = client;
+global.idArray = [];
+global.P = new Pokedex();
