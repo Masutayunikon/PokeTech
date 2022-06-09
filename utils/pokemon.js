@@ -25,6 +25,16 @@ function readUserPokemon(userId) {
     return pokemons;
 }
 
+function getUserPokedex(userId) {
+    const filePath = `./users/${userId}.json`;
+    let pokemons = [];
+    let user = JSON.parse(fs.readFileSync(filePath));
+    for (const [key] of Object.entries(user.pokedex)) {
+        pokemons.push(`${key}`);
+    }
+    return pokemons;
+}
+
 async function getIdArray() {
     let result = [];
     const interval = {
@@ -48,7 +58,6 @@ async function getPokedex(userId) {
         idArray = await getIdArray();
     let user = await readJsonFile(userId);
     let pokedex = [];
-    console.log(idArray.length);
     for (let i = 0; i < idArray.length; i++) {
         let pokemon = user.pokedex[idArray[i].toString()];
         if (pokemon) {
@@ -206,3 +215,4 @@ exports.addPokemonToPokedex = addPokemonToPokedex;
 exports.getSprite = getSprite;
 exports.getIdArray = getIdArray;
 exports.getPokedex = getPokedex;
+exports.getUserPokedex = getUserPokedex;

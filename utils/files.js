@@ -15,7 +15,7 @@ function createJsonFile(userId) {
         const json = {
             pokedex: {},
             timer: Date.now(),
-            level: 1,
+            level: 0,
             xp: 0
         }
         saveJsonFile(userId, json).then(() => {

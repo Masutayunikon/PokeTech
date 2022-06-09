@@ -4,7 +4,7 @@ const { Client, Collection, Intents } = require('discord.js');
 const { token } = require('./config.json');
 const Pokedex = require('pokedex-promise-v2');
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+const client = new Client({ intents: [Intents.FLAGS.GUILDS], restRequestTimeout: 60000 });
 
 client.commands = new Collection();
 const commandsPath = path.join(__dirname, 'commands');
