@@ -1,68 +1,51 @@
-const config = require("./config.json");
-const Discord = require('discord.js');
-const fs = require('fs');
-const client = new Discord.Client();
-client.commands = new Discord.Collection();
+const fs = require('node:fs');
+const path = require('node:path');
+const { Client, Collection, Intents } = require('discord.js');
+const { token } = require('./config.json');
+const Pokedex = require('pokedex-promise-v2');
 
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+const client = new Client({ intents: [Intents.FLAGS.GUILDS], restRequestTimeout: 60000 });
+
+client.commands = new Collection();
+const commandsPath = path.join(__dirname, 'commands');
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
 for (const file of commandFiles) {
-    const command = require(`./commands/${file}`);
-    client.commands.set(command.name, command);
+    const filePath = path.join(commandsPath, file);
+    const command = require(filePath);
+    client.commands.set(command.data.name, command);
 }
 
-async function setup_requirement() {
-    if (!fs.existsSync("./users/"))
-        fs.mkdir("./users/", err => {
-            if (err)
-                console.error("Can't create users directory");
-        })
-    if (!fs.existsSync("./api/"))
-        fs.mkdir("./api/", err => {
-            if (err)
-                console.error("Can't create api/species directory");
-        })
-    if (!fs.existsSync("./api/species/"))
-        fs.mkdir("./api/species/", err => {
-            if (err)
-                console.error("Can't create api/species directory");
-        })
-    fs.readdir("./api/species/", async (err, files) => {
-        if (files.length !== 649) {
-            for (let i = 1; i <= 649; i++)
-                await P.getPokemonSpeciesByName(i).then(resp => {
-                    fs.writeFile(`./api/species/${i}.json`, JSON.stringify(resp, null, 4), (err) => {
-                        if (err)
-                            console.log("Error to save %d species json file", i);
-                        else
-                            console.log("Save new species json files.");
-                    });
-                })
-        }
+if (!fs.existsSync('./users/'))
+    fs.mkdir('./users/', err => {
+        if (err)
+            console.error("Can't create users directory");
     });
 
-}
-
-client.on('ready', async () => {
-    console.log(`Logged in as ${client.user.username}!`);
-    await setup_requirement();
+client.once('ready', () => {
+    console.log('Ready!');
 });
 
-client.on('message', message => {
-    if (!message.content.startsWith(config.prefix) || message.author.bot || !config.channels.includes(message.channel.id)) return;
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isCommand()) return;
 
-    const args = message.content.slice(config.prefix.length).trim().split(/ +/);
-    const commandName = args.shift().toLowerCase();
-    const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));;
+    const command = client.commands.get(interaction.commandName);
 
-    if (!command)
-        return message.reply("I don't understand what you tell me!");
+    if (!command) return;
 
     try {
-        command.execute(message, args);
+        await command.execute(interaction);
     } catch (error) {
         console.error(error);
-        message.reply('there was an error trying to execute that command!').catch(err => console.log(err));
+        await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
     }
 });
 
-client.login(config.token).catch(err => console.error(err));
+client.login(token).then(err => {
+    if (err)
+        console.error(err);
+});
+
+global.client = client;
+global.idArray = [];
+global.P = new Pokedex();

@@ -1,25 +1,30 @@
 {
-  "name": "poketech.io",
-  "version": "1.0.0",
-  "description": "",
+  "name": "poketech_dev",
+  "version": "2.0.0",
+  "description": "pokemon discord bot",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
   },
-  "keywords": [],
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Masutayunikon/PokeTech.git"
+  },
+  "author": "Yunikon",
   "license": "ISC",
-  "dependencies": {
-    "discord.js": "^12.5.1",
-    "discord.js-reaction-menu": "^1.1.1",
-    "jsonpath": "^1.1.0",
-    "pokeapi-js-wrapper": "^1.2.0",
-    "pokedex-promise-v2": "^3.3.0",
-    "pokemon-gif": "^1.0.14",
-    "util": "^0.12.3",
-    "xmlhttprequest": "^1.8.0"
+  "bugs": {
+    "url": "https://github.com/Masutayunikon/PokeTech/issues"
   },
-  "devDependencies": {
-    "xhr2": "^0.2.1"
+  "homepage": "https://github.com/Masutayunikon/PokeTech#readme",
+  "dependencies": {
+    "@discordjs/builders": "^0.13.0",
+    "@discordjs/rest": "^0.4.1",
+    "@napi-rs/canvas": "^0.1.22",
+    "discord-api-types": "^0.33.2",
+    "discord.js": "^13.7.0",
+    "dotenv": "^16.0.1",
+    "pokedex-promise-v2": "^3.3.2",
+    "request": "^2.88.2"
   }
 }

@@ -1,5 +1,6 @@
-node_modules
-users/
-.idea/
+.env
+/node_modules/
+/.idea/
 config.json
-api/
+/users/
+/assets/

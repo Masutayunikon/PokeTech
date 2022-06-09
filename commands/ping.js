@@ -1,10 +1,24 @@
+const { SlashCommandBuilder } = require('@discordjs/builders');
+const { MessageActionRow, CommandInteraction, MessageButton } = require('discord.js');
+
 module.exports = {
-    name: "ping",
-    description: "Display latency from the bots",
-    usage: "ping",
-    aliases: [],
-    permissions: [],
-    async execute(msg, args) {
-        msg.channel.send(`:ping_pong: Pong \`${Date.now() - msg.createdTimestamp}ms\`. API Latency is \`${Math.round(msg.client.ws.ping)}ms\``);
+    data: new SlashCommandBuilder()
+        .setName('ping')
+        .setDescription('Replies with Pong!'),
+    /**
+     *
+     * @param {CommandInteraction} interaction
+     * @returns {Promise<void>}
+     */
+    async execute(interaction) {
+        const row = new MessageActionRow()
+            .addComponents(
+                new MessageButton()
+                    .setCustomId('primary')
+                    .setLabel('Primary')
+                    .setStyle('PRIMARY'),
+            );
+
+        await interaction.reply({ content: 'Pong!', components: [row] });
     },
 };
