@@ -18,7 +18,7 @@ function readUserPokemon(userId) {
         let number = 0;
         for (const pokemon of value) {
             if (pokemon.is_shiny) {
-                let shiny_pokemon_name = `${pokemon.name} <:shiny:986320498688417843>`;
+                let shiny_pokemon_name = `${pokemon.name} ${findEmoji("shiny")}`;
                 pokemons.push(shiny_pokemon_name);
             } else {
                 number++;
@@ -180,13 +180,13 @@ async function catchPokemon(interaction) {
             addPokemonToPokedex(interaction.user.id, id, shiny).then(() => {
                 getSprite(pokemon, shiny).then(async (sprite) => {
                     getRarity(id).then(async (rarity) => {
-                        let title = (shiny) ? `${pokemon.name} <:shiny:986320498688417843>` : `${pokemon.name}`;
+                        let title = (shiny) ? `${pokemon.name} ${findEmoji("shiny")}` : `${pokemon.name}`;
                         let xp = await getXpByRarity(rarity);
                         if (shiny)
                             xp += 10;
                         const embed = new MessageEmbed()
                             .setTitle(title)
-                            .setDescription(`**Id:** ${pokemon.id}\n**Type:** ${pokemon.types.map(type => type.type.name).join(', ')}\n**Xp:** ${xp} <:xp:986301871197134868>`)
+                            .setDescription(`**Id:** ${pokemon.id}\n**Type:** ${pokemon.types.map(type => type.type.name).join(', ')}\n**Xp:** ${xp} ${findEmoji("xp")}`)
                             .setColor(rarity)
                             .setImage(sprite)
                         await interaction.editReply({embeds: [embed]});
