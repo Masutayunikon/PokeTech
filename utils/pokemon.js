@@ -7,21 +7,26 @@ const request = require('request');
 const { MessageEmbed } = require('discord.js');
 const { getRandomIntInclusive, getRandomFromArray } = require('../utils/random');
 const { getDate, getTimer, setTimer } = require('../utils/time');
-const { getXpByRarity } = require('../utils/xp');
+const { getXpByRarity, giveUserXp } = require('../utils/xp');
 
 function readUserPokemon(userId) {
     const filePath = `./users/${userId}.json`;
     let pokemons = [];
     let user = JSON.parse(fs.readFileSync(filePath));
     for (const [key, value] of Object.entries(user.pokedex)) {
+        let pokemon_name = "";
+        let number = 0;
         for (const pokemon of value) {
-            let pokemon_name = `${pokemon.name} ${key}`;
             if (pokemon.is_shiny) {
                 let emoji = findEmoji('shiny', guildId);
-                pokemon_name = `${pokemon.name} ${emoji} ${key}`;
+                let shiny_pokemon_name = `${pokemon.name} ${emoji}`;
+                pokemons.push(shiny_pokemon_name);
+            } else {
+                number++;
+                pokemon_name = `${pokemon.name} x${number}`;
             }
-            pokemons.push(pokemon_name);
         }
+        pokemons.push(pokemon_name);
     }
     return pokemons;
 }
@@ -186,6 +191,7 @@ async function catchPokemon(interaction) {
                             .setColor(rarity)
                             .setImage(sprite)
                         await interaction.editReply({embeds: [embed]});
+                        await giveUserXp(interaction.user.id, xp);
                     }).catch(error => {
                         console.log(error);
                     });
