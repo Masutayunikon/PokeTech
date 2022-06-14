@@ -22,7 +22,7 @@ const rest = new REST({version: 9}).setToken(token);
 
 (async () => {
     try {
-        await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands});
+        await rest.put(Routes.applicationCommands(clientId, guildId), { body: commands});
         console.log(`command register succesfully for ${guildId}`);
     } catch (error) {
         console.error(error);

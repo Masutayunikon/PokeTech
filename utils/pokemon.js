@@ -7,6 +7,7 @@ const request = require('request');
 const { MessageEmbed } = require('discord.js');
 const { getRandomIntInclusive, getRandomFromArray } = require('../utils/random');
 const { getDate, getTimer, setTimer } = require('../utils/time');
+const { getXpByRarity } = require('../utils/xp');
 
 function readUserPokemon(userId) {
     const filePath = `./users/${userId}.json`;
@@ -176,9 +177,12 @@ async function catchPokemon(interaction) {
                 getSprite(pokemon, shiny).then(async (sprite) => {
                     getRarity(id).then(async (rarity) => {
                         let title = (shiny) ? `${pokemon.name} ${findEmoji("shiny", config.guildId)}` : `${pokemon.name}`;
+                        let xp = await getXpByRarity(rarity);
+                        if (shiny)
+                            xp += 10;
                         const embed = new MessageEmbed()
                             .setTitle(title)
-                            .setDescription(`**Id:** ${pokemon.id}\n**Type:** ${pokemon.types.map(type => type.type.name).join(', ')}\n**Weight:** ${pokemon.weight}kg\n**Height:** ${pokemon.height}m`)
+                            .setDescription(`**Id:** ${pokemon.id}\n**Type:** ${pokemon.types.map(type => type.type.name).join(', ')}\n**Xp:** ${xp} ${findEmoji("xp", config.guildId)}`)
                             .setColor(rarity)
                             .setImage(sprite)
                         await interaction.editReply({embeds: [embed]});

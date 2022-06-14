@@ -47,7 +47,7 @@ module.exports = {
                 }
                 const pokedex = new Canvas.Image();
                 pokedex.src = pokedexBuffer;
-                readFile("./assets/aaron.png", async (err, spriteBuffer) => {
+                readFile("./assets/profil/aaron.png", async (err, spriteBuffer) => {
                     if (err) {
                         await interaction.editReply("An error occurred");
                         return;
@@ -55,7 +55,7 @@ module.exports = {
                     const sprite = new Canvas.Image();
                     sprite.src = spriteBuffer;
                     context.drawImage(pokedex, 200, 200, 450, 200);
-                    context.drawImage(sprite, 10, 30, 180, 240);
+                    context.drawImage(sprite, 0, 0, 200, 300);
                     readFile("./assets/level.png", async (err, levelBuffer) => {
                         if (err) {
                             await interaction.editReply("An error occurred");
@@ -97,8 +97,8 @@ module.exports = {
                             context.beginPath();
                             context.arc(215, 137, 50, 0, 2 * Math.PI);
                             context.fill();
-                            const attachement = new MessageAttachment(canvas.toBuffer(), "profile.png");
-                            await interaction.editReply({content: null, files: [attachement]});
+                            const attachment = new MessageAttachment(canvas.toBuffer(), "profile.png");
+                            await interaction.editReply({content: null, files: [attachment]});
                         });
                     });
                 });
