@@ -210,7 +210,7 @@ async function catchPokemon(interaction) {
             const embed = new MessageEmbed()
                 .setTitle(`You have to wait ${getDate(time)}`)
                 .setColor("WHITE")
-            await interaction.editReply({embeds: [embed]});
+            await interaction.editReply({embeds: [embed], ephemeral: true});
         });
     }
 }
