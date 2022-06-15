@@ -173,6 +173,7 @@ async function catchPokemon(interaction) {
     if (idArray.length === 0)
         idArray = await getIdArray();
     if (await getTimer(interaction.user.id) < 0) {
+        await interaction.deferReply("Catching...");
         await setTimer(interaction.user.id);
         let id = await getPokemonId();
         let shiny = isShiny();
@@ -210,7 +211,7 @@ async function catchPokemon(interaction) {
             const embed = new MessageEmbed()
                 .setTitle(`You have to wait ${getDate(time)}`)
                 .setColor("WHITE")
-            await interaction.editReply({embeds: [embed], ephemeral: true});
+            await interaction.reply({embeds: [embed], ephemeral: true});
         });
     }
 }

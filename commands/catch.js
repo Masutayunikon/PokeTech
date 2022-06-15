@@ -17,16 +17,15 @@ module.exports = {
      * @returns {Promise<void>}
      */
     async execute(interaction) {
-        await interaction.deferReply();
-                fileExist(interaction.user.id).then(async (result) => {
+        fileExist(interaction.user.id).then(async (result) => {
             if (!result)
                 createJsonFile(interaction.user.id).then(async () => {
-                   await catchPokemon(interaction);
+                    await catchPokemon(interaction);
                 });
             else
                 await catchPokemon(interaction);
         }).catch(error => {
-           console.log(error);
+            console.log(error);
         });
     },
 };
