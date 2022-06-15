@@ -19,7 +19,6 @@ module.exports = {
      */
     async execute(interaction) {
         let user;
-        interaction.deferReply("Create profile of " + user.username + "...");
         if (interaction.options.getUser("user") != null) {
             user = interaction.options.getUser("user");
         } else {
@@ -29,6 +28,7 @@ module.exports = {
             interaction.reply("User has no profile yet!", {ephemeral: true});
             return;
         }
+        interaction.deferReply("Create profile of " + user.username + "...");
         let json = await readJsonFile(user.id);
         const canvas = Canvas.createCanvas(700, 300);
         const context = canvas.getContext("2d");
