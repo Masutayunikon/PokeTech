@@ -35,7 +35,7 @@ module.exports = {
         // load image ./assets/background.png
         readFile("./assets/dracaufeu-background.jpg", async (err, backgroundBuffer) => {
             if (err) {
-                await interaction.reply("An error occurred");
+                await interaction.editReply("An error occurred");
                 return;
             }
             const background = new Canvas.Image();
@@ -43,14 +43,14 @@ module.exports = {
             context.drawImage(background, 0, 0, canvas.width, canvas.height);
             readFile("./assets/Pokedex.png", async (err, pokedexBuffer) => {
                 if (err) {
-                    await interaction.reply("An error occurred");
+                    await interaction.editReply("An error occurred");
                     return;
                 }
                 const pokedex = new Canvas.Image();
                 pokedex.src = pokedexBuffer;
                 readFile("./assets/profil/aaron.png", async (err, spriteBuffer) => {
                     if (err) {
-                        await interaction.reply("An error occurred");
+                        await interaction.editReply("An error occurred");
                         return;
                     }
                     const sprite = new Canvas.Image();
@@ -59,14 +59,14 @@ module.exports = {
                     context.drawImage(sprite, 0, 0, 200, 300);
                     readFile("./assets/level.png", async (err, levelBuffer) => {
                         if (err) {
-                            await interaction.reply("An error occurred");
+                            await interaction.editReply("An error occurred");
                             return;
                         }
                         const level = new Canvas.Image();
                         level.src = levelBuffer;
                         readFile("./assets/no-level.png", async (err, noLevelBuffer) => {
                             if (err) {
-                                await interaction.reply("An error occurred");
+                                await interaction.editReply("An error occurred");
                                 return;
                             }
                             const noLevel = new Canvas.Image();
@@ -99,7 +99,7 @@ module.exports = {
                             context.arc(215, 137, 50, 0, 2 * Math.PI);
                             context.fill();
                             const attachment = new MessageAttachment(canvas.toBuffer(), "profile.png");
-                            await interaction.reply({content: null, files: [attachment]});
+                            await interaction.editReply({content: null, files: [attachment]});
                         });
                     });
                 });
