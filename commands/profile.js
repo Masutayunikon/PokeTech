@@ -30,7 +30,6 @@ module.exports = {
             interaction.reply("User has no profile yet!", {ephemeral: true});
             return;
         }
-        await interaction.deferReply("Loading...");
         let json = await readJsonFile(user.id);
         const canvas = Canvas.createCanvas(700, 300);
         const context = canvas.getContext("2d");
