@@ -19,12 +19,11 @@ module.exports = {
      */
     async execute(interaction) {
         let user;
+        interaction.deferReply("Create profile of " + user.username + "...");
         if (interaction.options.getUser("user") != null) {
             user = interaction.options.getUser("user");
-            interaction.deferReply("Create profile of " + user.username + "...", {ephemeral: true});
         } else {
             user = interaction.user;
-            interaction.deferReply("Create profile of " + user.username + "...");
         }
         if (!checkUserExist(user.id)) {
             interaction.reply("User has no profile yet!", {ephemeral: true});
