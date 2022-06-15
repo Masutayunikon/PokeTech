@@ -21,13 +21,16 @@ module.exports = {
         let user;
         if (interaction.options.getUser("user") != null) {
             user = interaction.options.getUser("user");
-        } else
+            interaction.deferReply("Create profile of " + user.username + "...", {ephemeral: true});
+        } else {
             user = interaction.user;
+            interaction.deferReply("Create profile of " + user.username + "...");
+        }
         if (!checkUserExist(user.id)) {
-            interaction.reply("User has no profile yet!");
+            interaction.reply("User has no profile yet!", {ephemeral: true});
             return;
         }
-        await interaction.deferReply();
+        await interaction.deferReply("Loading...");
         let json = await readJsonFile(user.id);
         const canvas = Canvas.createCanvas(700, 300);
         const context = canvas.getContext("2d");
