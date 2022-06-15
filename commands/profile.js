@@ -5,6 +5,7 @@ const { readFile } = require('fs');
 const { getUserPokedex, getPokedex } = require('../utils/pokemon');
 const { xpNeeded, getProgressBar } = require('../utils/xp');
 const { readJsonFile, checkUserExist} = require('../utils/files');
+const {getDate} = require("../utils/time");
 
 
 module.exports = {
@@ -28,7 +29,9 @@ module.exports = {
             interaction.reply("User has no profile yet!", {ephemeral: true});
             return;
         }
-        interaction.deferReply("Create profile of " + user.username + "...");
+        await interaction.deferReply("Loading profile...");
+        // get timestamp of now
+        const now = new Date();
         let json = await readJsonFile(user.id);
         const canvas = Canvas.createCanvas(700, 300);
         const context = canvas.getContext("2d");
@@ -99,6 +102,10 @@ module.exports = {
                             context.arc(215, 137, 50, 0, 2 * Math.PI);
                             context.fill();
                             const attachment = new MessageAttachment(canvas.toBuffer(), "profile.png");
+                            // wait 3 second - now date
+                            const diff = (new Date().getTime) - now.getTime();
+                            if (diff < 3000)
+                                await new Promise(resolve => setTimeout(resolve, diff));
                             await interaction.editReply({content: null, files: [attachment]});
                         });
                     });
