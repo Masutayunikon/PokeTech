@@ -22,7 +22,7 @@ function readUserPokemon(userId) {
                 pokemons.push(shiny_pokemon_name);
             } else {
                 number++;
-                pokemon_name = `${pokemon.name} x${number}`;
+                pokemon_name = `${key} ${pokemon.name} x${number}`;
             }
         }
         pokemons.push(pokemon_name);
