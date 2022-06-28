@@ -178,7 +178,7 @@ async function catchPokemon(interaction) {
     if (true) {
         await interaction.deferReply("Catching...");
         await setTimer(interaction.user.id);
-        let id = 106;
+        let id = await getPokemonId();
         let shiny = isShiny();
         P.getPokemonByName(id).then(async (pokemon) => {
             addPokemonToPokedex(interaction.user.id, id, shiny).then(() => {
