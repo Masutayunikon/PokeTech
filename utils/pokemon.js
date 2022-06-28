@@ -193,8 +193,12 @@ async function catchPokemon(interaction) {
                             .setImage(sprite)
                         await interaction.editReply({embeds: [embed]});
                         await giveUserXp(interaction.user.id, xp);
-                    }).catch(error => {
-                        console.log(error);
+                    }).catch(async error => {
+                        const embed = new MessageEmbed()
+                            .setTitle("Something went wrong")
+                            .setColor("DARK_RED")
+                            .setDescription(`${error}`)
+                        await interaction.editReply({embeds: [embed]});
                     });
                 }).catch(async error => {
                     const embed = new MessageEmbed()
@@ -203,6 +207,12 @@ async function catchPokemon(interaction) {
                         .setDescription(`${error}`)
                     await interaction.editReply({embeds: [embed]});
                 });
+            }).catch( async error => {
+                const embed = new MessageEmbed()
+                    .setTitle(`Sorry, an error occured`)
+                    .setColor("DARK_RED")
+                    .setDescription(`${error}`)
+                await interaction.editReply({embeds: [embed]});
             });
         }).catch(error => {
             console.error(error);
