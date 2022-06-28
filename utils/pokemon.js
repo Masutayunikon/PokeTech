@@ -144,7 +144,6 @@ async function getRarity(id) {
 
 async function getPokemonId() {
     let id = getRandomFromArray(idArray);
-    return id;
     if (await getRarity(id) === "RED")
         if (getRandomIntInclusive(1, 100) <= 20)
             return id;
@@ -175,7 +174,7 @@ function isShiny() {
 async function catchPokemon(interaction) {
     if (idArray.length === 0)
         idArray = await getIdArray();
-    if (true) {
+    if (await getTimer(interaction.user.id) < 0) {
         await interaction.deferReply("Catching...");
         await setTimer(interaction.user.id);
         let id = await getPokemonId();
