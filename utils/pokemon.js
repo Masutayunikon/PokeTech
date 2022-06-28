@@ -81,7 +81,7 @@ function getSprite(pokemon, shiny) {
                 return resolve(pokemon.sprites.versions["generation-v"]["black-white"].animated.front_shiny);
             request(`https://projectpokemon.org/images/shiny-sprite/${pokemon.name}.gif`, (error, response) => {
                 if (error)
-                    return reject(error);
+                    return resolve(pokemon.sprites.front_shiny);
                 if (response.statusCode === 404)
                     return resolve(pokemon.sprites.front_shiny);
                 return resolve(`https://projectpokemon.org/images/shiny-sprite/${pokemon.name}.gif`);
@@ -93,7 +93,7 @@ function getSprite(pokemon, shiny) {
             return resolve(pokemon.sprites.versions["generation-v"]["black-white"].animated.front_default);
         request(`https://projectpokemon.org/images/normal-sprite/${pokemon.name}.gif`, (error, response) => {
             if (error)
-                return reject(error);
+                return resolve(pokemon.sprites.front_default);
             if (response.statusCode === 404) {
                 if (pokemon.sprites.front_default)
                     return resolve(pokemon.sprites.front_default);
