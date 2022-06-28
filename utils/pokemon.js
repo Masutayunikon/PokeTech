@@ -142,6 +142,7 @@ async function getRarity(id) {
 
 async function getPokemonId() {
     let id = getRandomFromArray(idArray);
+    return id;
     if (await getRarity(id) === "RED")
         if (getRandomIntInclusive(1, 100) <= 20)
             return id;
