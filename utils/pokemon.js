@@ -172,7 +172,7 @@ function isShiny() {
 async function catchPokemon(interaction) {
     if (idArray.length === 0)
         idArray = await getIdArray();
-    if (await getTimer(interaction.user.id) < 0) {
+    if (true) {
         await interaction.deferReply("Catching...");
         await setTimer(interaction.user.id);
         let id = await getPokemonId();
