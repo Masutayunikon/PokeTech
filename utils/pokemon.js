@@ -18,7 +18,7 @@ function readUserPokemon(userId) {
         let number = 0;
         for (const pokemon of value) {
             if (pokemon.is_shiny) {
-                let shiny_pokemon_name = `${pokemon.id} ${pokemon.name} ${findEmoji("shiny")}`;
+                let shiny_pokemon_name = `${key} ${pokemon.name} ${findEmoji("shiny")}`;
                 pokemons.push(shiny_pokemon_name);
             } else {
                 number++;
