@@ -22,7 +22,7 @@ function getDate(date) {
 function setTimer(userId) {
     return new Promise((resolve, reject) => {
         readJsonFile(userId).then(json => {
-            json.timer = Date.now() + 15 * 60 * 1000;
+            json.timer = Date.now() + 10 * 60 * 1000;
             saveJsonFile(userId, json).then(() => {
                 resolve();
             }).catch(error => {
