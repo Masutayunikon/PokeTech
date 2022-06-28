@@ -108,9 +108,11 @@ function addPokemonToPokedex(userId, pokemonId, isShiny) {
     return new Promise((resolve, reject) => {
         readJsonFile(userId).then(async json => {
             P.getPokemonByName(pokemonId).then(async pokemon => {
-                let is_shiny = isShiny
-                if (!json.pokedex.pokemonId)
+                let is_shiny = isShiny;
+                if (json.pokedex[pokemonId] === undefined) {
+                    console.log("in");
                     json.pokedex[pokemonId] = [];
+                }
                 json.pokedex[pokemonId].push({name: pokemon.name, rarity: await getRarity(pokemonId), is_shiny: is_shiny});
                 saveJsonFile(userId, json).then(() => {
                     resolve();
