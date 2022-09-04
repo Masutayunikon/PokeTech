@@ -1,5 +1,25 @@
 const fs = require('fs');
 
+function getJsonObjectFromFile(path) {
+    return new Promise((resolve, reject) => {
+        fs.readFile(path, (err, data) => {
+            if (err)
+                return reject(err)
+            return resolve(JSON.parse(data.toString()));
+        })
+    })
+}
+
+function saveJsonObjectToFile(path, json) {
+    return new Promise((resolve, reject) => {
+        fs.writeFile(path, JSON.stringify(json, null, 4), (err) => {
+            if (err)
+                return reject(err);
+            return resolve();
+        })
+    })
+}
+
 function readJsonFile(userId) {
     return new Promise((resolve, reject) => {
         fs.readFile(`./users/${userId}.json`, (err, data) => {
@@ -57,3 +77,5 @@ exports.saveJsonFile = saveJsonFile;
 exports.readJsonFile = readJsonFile;
 exports.fileExist = fileExist;
 exports.createJsonFile = createJsonFile;
+exports.getJsonObjectFromFile = getJsonObjectFromFile;
+exports.saveJsonObjectToFile = saveJsonObjectToFile;

@@ -77,21 +77,17 @@ async function getPokedex(userId) {
 function getSprite(pokemon, shiny) {
     if (shiny) {
         return new Promise((resolve, reject) => {
-            if (pokemon.sprites.versions["generation-v"]["black-white"].animated.front_shiny)
-                return resolve(pokemon.sprites.versions["generation-v"]["black-white"].animated.front_shiny);
-            request(`https://projectpokemon.org/images/shiny-sprite/${pokemon.name}.gif`, (error, response) => {
+            request(`https://play.pokemonshowdown.com/sprites/ani-shiny/${pokemon.name}.gif`, (error, response) => {
                 if (error)
                     return resolve(pokemon.sprites.front_shiny);
                 if (response.statusCode === 404)
                     return resolve(pokemon.sprites.front_shiny);
-                return resolve(`https://projectpokemon.org/images/shiny-sprite/${pokemon.name}.gif`);
+                return resolve(`https://play.pokemonshowdown.com/sprites/ani-shiny/${pokemon.name}.gif`);
             })
         })
     }
     return new Promise((resolve, reject) => {
-        if (pokemon.sprites.versions["generation-v"]["black-white"].animated.front_default)
-            return resolve(pokemon.sprites.versions["generation-v"]["black-white"].animated.front_default);
-        request(`https://projectpokemon.org/images/normal-sprite/${pokemon.name}.gif`, (error, response) => {
+        request(`https://play.pokemonshowdown.com/sprites/ani/${pokemon.name}.gif`, (error, response) => {
             if (error)
                 return resolve(pokemon.sprites.front_default);
             if (response.statusCode === 404) {
@@ -99,7 +95,7 @@ function getSprite(pokemon, shiny) {
                     return resolve(pokemon.sprites.front_default);
                 return resolve(pokemon.sprites.versions["generation-viii"]["icons"].front_default);
             }
-            return resolve(`https://projectpokemon.org/images/normal-sprite/${pokemon.name}.gif`);
+            return resolve(`https://play.pokemonshowdown.com/sprites/ani/${pokemon.name}.gif`);
         })
     })
 }
@@ -172,9 +168,7 @@ function isShiny() {
 }
 
 async function catchPokemon(interaction) {
-    if (idArray.length === 0)
-        idArray = await getIdArray();
-    if (await getTimer(interaction.user.id) < 0) {
+    if (await getTimer(interaction.user.id) >= 0) {
         await interaction.deferReply("Catching...");
         await setTimer(interaction.user.id);
         let id = await getPokemonId();
